@@ -200,14 +200,17 @@ void MainWindow::showPart(const Part& p) {
     ui->lbl_StorageDetailsValue->setText(p.storageDetails);
     ui->lbl_SourceValue->setText(p.supplier);
     ui->lbl_AlternativeSourceValue->setText(p.altSupplier);
-    ui->lbl_Manufacturer->setText("Hersteller: " + p.manufacturer);
-    ui->lbl_ManufacturerLink->setTextFormat(Qt::RichText);
-    ui->lbl_ManufacturerLink->setOpenExternalLinks(true);
+    ui->lbl_ManufacturerValue->setText(p.manufacturer);
+    //ui->lbl_ManufacturerValue->setTextFormat(Qt::RichText);  //Ändern um die Links einzufügen
+    //ui->lbl_ManufacturerValue->setOpenExternalLinks(true);
+    ui->lbl_FormatValue->setText(p.format);
+    ui->lbl_TypeValue->setText(p.type);
+    /*
     if (!p.manufacturerLink.isEmpty())
         ui->lbl_ManufacturerLink->setText(QString("<a href=\"%1\">%1</a>").arg(p.manufacturerLink));
     else
         ui->lbl_ManufacturerLink->setText("-");
-
+    */
     ui->lbl_HashtagsValues->setText(p.hashtags.join(", "));
     ui->txt_Description->setPlainText(p.description);
 
@@ -276,17 +279,23 @@ void MainWindow::addNewPart() {
 
     // --- Felder lesen (null-sicher) ---
     Part p;
-    if (auto w = getLE("edt_PartName"))          p.name             = w->text();
-    if (auto w = getLE("edt_ShortDescription"))  p.shortDescription = w->text();
-    if (auto w = getLE("edt_Category"))          p.category         = w->text();
-    if (auto w = getLE("edt_Subcategory"))       p.subcategory      = w->text();
-    if (auto w = getPTE("txt_Description"))      p.description      = w->toPlainText();
-    if (auto w = getLE("edt_Source"))            p.supplier         = w->text();
-    if (auto w = getLE("edt_AlternativeSource")) p.altSupplier      = w->text();
-    if (auto w = getLE("edt_Manufacturer"))      p.manufacturer     = w->text();
+    if (auto w = getLE("edt_PartName"))          p.name                 = w->text();
+    if (auto w = getLE("edt_ShortDescription"))  p.shortDescription     = w->text();
+    if (auto w = getLE("edt_Category"))          p.category             = w->text();
+    if (auto w = getLE("edt_Subcategory"))       p.subcategory          = w->text();
+    if (auto w = getPTE("txt_Description"))      p.description          = w->toPlainText();
+    if (auto w = getLE("edt_Source"))            p.supplier             = w->text();
+    if (auto w = getLE("edt_AlternativeSource")) p.altSupplier          = w->text();
+    if (auto w = getLE("edt_Manufacturer"))      p.manufacturer         = w->text();
+    if (auto w = getLE("edt_StorageLocation"))   p.storage              = w->text();
+    if (auto w = getLE("edt_StorageLocationDetails")) p.storageDetails  = w->text();
+    if (auto w = getLE("edt_Type"))              p.type                 = w->text();
+    if (auto w = getLE("edt_Format"))            p.format               = w->text();
+    if (auto w = getLE("edt_SupplierLink"))      p.supplierLink         = w->text();
+    if (auto w = getLE("edt_AltSupplierLink"))   p.altSupplierLink      = w->text();
+    if (auto w = getLE("edt_manufacturerLink"))  p.manufacturerLink     = w->text();
 
-    // optionale Links (falls noch nicht in der UI, bleiben leer)
-    // p.supplierLink, p.altSupplierLink, p.manufacturerLink
+
 
     if (auto w = getLE("edt_FilePath")) {
         const QString filePath = w->text().trimmed();
@@ -405,6 +414,8 @@ void MainWindow::editPart(int id) {
     setLE("edt_ManufacturerLink",       p.manufacturerLink);
     setLE("edt_StorageLocation",        p.storage);
     setLE("edt_StorageLocationDetails", p.storageDetails);
+    setLE("edt_Format",                 p.format);
+    setLE("edt_Type",                   p.type);
     setSB("spb_Quantity",               p.quantity);
     setLE("edt_Price",                  QString::number(p.price));
 
@@ -439,6 +450,8 @@ void MainWindow::editPart(int id) {
     if (auto w = getLE("edt_ManufacturerLink"))       p.manufacturerLink = w->text().trimmed();
     if (auto w = getLE("edt_StorageLocation"))        p.storage = w->text().trimmed();
     if (auto w = getLE("edt_StorageLocationDetails")) p.storageDetails = w->text().trimmed();
+    if (auto w = getLE("edt_Format"))                 p.format = w->text().trimmed();
+    if (auto w = getLE("edt_Type"))                   p.type = w->text().trimmed();
 
     p.localFiles.clear();
     if (auto w = getLE("edt_FilePath")) {

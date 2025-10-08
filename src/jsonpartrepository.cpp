@@ -167,6 +167,8 @@ QVector<Part> JsonPartRepository::searchParts(const QString& term,
             p.altSupplier, p.altSupplierLink,
             p.manufacturer, p.manufacturerLink,
             p.storage, p.storageDetails,
+            p.type, p.format,
+            QString::number(p.id),
             p.hashtags.join(' '),
             p.deleted ? "deleted" : "",
             p.localFiles.join(' ')
