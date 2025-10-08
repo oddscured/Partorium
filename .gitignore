@@ -1,0 +1,32 @@
+# Build & CMake
+/build*/
+/out/
+/CMakeFiles/
+/CMakeCache.txt
+cmake-build-*/
+*.obj
+*.o
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# Qt Creator / clangd
+*.user
+*.pro.user
+*.autosave
+.qtc_clangd/
+qtcreator.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# vcpkg / conan (falls genutzt)
+vcpkg_installed/
+.conan/
