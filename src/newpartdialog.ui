@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>892</width>
-    <height>595</height>
+    <height>626</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>540</x>
-     <y>560</y>
+     <y>593</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -35,7 +35,7 @@
      <x>10</x>
      <y>10</y>
      <width>511</width>
-     <height>261</height>
+     <height>321</height>
     </rect>
    </property>
    <property name="title">
@@ -44,13 +44,71 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>31</y>
+      <x>272</x>
+      <y>32</y>
+      <width>231</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="lbl_ImagePreview">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>150</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>IMAGE</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_ChooseImage">
+         <property name="text">
+          <string>Bild wählen</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>32</y>
       <width>245</width>
-      <height>209</height>
+      <height>240</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_2">
+     <property name="labelAlignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="formAlignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+     </property>
      <item row="0" column="0">
       <widget class="QLabel" name="lbl_Name">
        <property name="text">
@@ -102,76 +160,34 @@
       <widget class="QLineEdit" name="edt_Subcategory"/>
      </item>
      <item row="5" column="0">
+      <widget class="QLabel" name="lbl_Format">
+       <property name="text">
+        <string>Format</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="edt_Format"/>
+     </item>
+     <item row="6" column="0">
       <widget class="QLabel" name="lbl_Quantity">
        <property name="text">
         <string>Menge</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="1">
       <widget class="QSpinBox" name="spb_Quantity"/>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="lbl_Price">
        <property name="text">
         <string>Preis</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QLineEdit" name="edt_Price"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>272</x>
-      <y>32</y>
-      <width>231</width>
-      <height>211</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QLabel" name="lbl_ImagePreview">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>150</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>IMAGE</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_ChooseImage">
-         <property name="text">
-          <string>Bild wählen</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
     </layout>
    </widget>
@@ -271,7 +287,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>360</y>
+     <y>400</y>
      <width>871</width>
      <height>191</height>
     </rect>
@@ -283,9 +299,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>20</y>
       <width>851</width>
-      <height>181</height>
+      <height>161</height>
      </rect>
     </property>
    </widget>
@@ -296,7 +312,7 @@
      <x>530</x>
      <y>240</y>
      <width>351</width>
-     <height>111</height>
+     <height>91</height>
     </rect>
    </property>
    <property name="title">
@@ -306,7 +322,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>26</y>
       <width>331</width>
       <height>54</height>
      </rect>
@@ -345,8 +361,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>280</y>
-     <width>511</width>
+     <y>330</y>
+     <width>871</width>
      <height>70</height>
     </rect>
    </property>

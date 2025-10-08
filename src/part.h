@@ -11,6 +11,8 @@ struct Part {
     QString shortDescription;               // Kurzbeschreibung
     QString category;                       // Kategorie
     QString subcategory;                    // Unterkategorie
+    QString type;                           // Typ (Modul, Bauteil, Mechanik, etc.)
+    QString format;                         // Format (z.B. SMD, THT, 1206, ...)
     QString description;                    // Beschreibung (Langtext)
     QString supplier;                       // Lieferant
     QString supplierLink;                   // Link zum Lieferant
