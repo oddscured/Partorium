@@ -42,6 +42,8 @@ inline QJsonObject toJson(const Part& p) {
     o["category"] = p.category;
     o["subcategory"] = p.subcategory;
     o["description"] = p.description;
+    o["format"] = p.format;
+    o["type"] = p.type;
     o["supplier"] = p.supplier;
     o["supplierLink"] = p.supplierLink;
     o["altSupplier"] = p.altSupplier;
@@ -69,6 +71,8 @@ inline Part partFromJson(const QJsonObject& o) {
     p.shortDescription = o["shortDescription"].toString();
     p.category = o["category"].toString();
     p.subcategory = o["subcategory"].toString();
+    p.type = o["type"].toString();
+    p.format = o["format"].toString();
     p.description = o["description"].toString();
     p.supplier = o["supplier"].toString();
     p.supplierLink = o["supplierLink"].toString();
