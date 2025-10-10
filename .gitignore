@@ -1,9 +1,10 @@
 # Build & CMake
-/build*/
-/out/
-/CMakeFiles/
-/CMakeCache.txt
-cmake-build-*/
+**/build*/
+**/out/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/*-Debug/
+**/cmake-build-*/
 *.obj
 *.o
 *.a
