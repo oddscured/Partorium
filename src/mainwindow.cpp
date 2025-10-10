@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_repo = new JsonPartRepository(this);
     m_repo->load();
     m_imagesModel = new QStandardItemModel(this);
-    ui->lst_Images->setModel(m_imagesModel);
+    //ui->lst_Images->setModel(m_imagesModel);
 
     // Menüs/Aktionen
     // Anzeige gelöschter Teile umschalten
@@ -69,13 +69,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() { delete ui; }
 
-/*
-void MainWindow::buildMenus() {
-    auto partMenu = menuBar()->addMenu(tr("&Bauteile"));
-    auto actNew   = partMenu->addAction(tr("Neues Bauteil…"), this, &MainWindow::addNewPart);
-    actNew->setShortcut(QKeySequence::New);
-}
-*/
 
 void MainWindow::loadOrInitRepository(const QString& path) {
     QString targetPath = path;
@@ -296,11 +289,19 @@ void MainWindow::addNewPart() {
     if (auto w = getLE("edt_manufacturerLink"))  p.manufacturerLink     = w->text();
 
 
+    if (auto w = getLE("edt_PartFilesFolder")) {
+        const QString folderPath = w->text().trimmed();
+        if (!folderPath.isEmpty()) {
+            QDir d(folderPath);
+            if (d.exists()) p.localFiles << folderPath;
+        }
+    };
 
+    /*
     if (auto w = getLE("edt_FilePath")) {
         const QString filePath = w->text().trimmed();
         if (!filePath.isEmpty()) p.localFiles << filePath;
-    }
+    } */
 
     // Bild aus Dialog-Property (wird gesetzt, wenn du die Bildauswahl-Logik ergänzt)
     const QString chosenImage = dlg.property("chosenImagePath").toString();
@@ -419,7 +420,7 @@ void MainWindow::editPart(int id) {
     setSB("spb_Quantity",               p.quantity);
     setLE("edt_Price",                  QString::number(p.price));
 
-    if (!p.localFiles.isEmpty()) setLE("edt_FilePath", p.localFiles.first());
+    if (!p.localFiles.isEmpty()) setLE("edt_PartFilesFolder", p.localFiles.first());
 
     // Bild (Vorauswahl) optional anzeigen
     if (!p.imagePath.isEmpty()) {
@@ -454,7 +455,7 @@ void MainWindow::editPart(int id) {
     if (auto w = getLE("edt_Type"))                   p.type = w->text().trimmed();
 
     p.localFiles.clear();
-    if (auto w = getLE("edt_FilePath")) {
+    if (auto w = getLE("edt_PartFilesFolder")) {
         const QString filePath = w->text().trimmed();
         if (!filePath.isEmpty()) p.localFiles << filePath;
     }

@@ -14,17 +14,31 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 void SettingsDialog::hookUpSignals() {
     connect(this, &QDialog::accepted, this, &SettingsDialog::saveSettings);
-    auto edt = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
-    auto btn = this->findChild<QPushButton*>("btn_ChooseDefaultImageFolder");
-    if (btn) {
-        connect(btn, &QPushButton::clicked, this, [this, edt]{
+    auto edtImagesFolder = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
+    auto btnImagesFolder = this->findChild<QPushButton*>("btn_ChooseDefaultImageFolder");
+    if (btnImagesFolder) {
+        connect(btnImagesFolder, &QPushButton::clicked, this, [this, edtImagesFolder]{
             const QString folder = QFileDialog::getExistingDirectory(this,
                                                               tr("Standard-Bilderordner wählen"), QString(),
                                                               QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
             if (!folder.isEmpty()) {
                 // Im Dialog merken (für MainWindow)
                 this->setProperty("chosenImagePath", folder);
-                if (edt) edt->setText(QFileInfo(folder).fileName());
+                if (edtImagesFolder) edtImagesFolder->setText(QFileInfo(folder).filePath());
+            }
+        });
+    }
+    auto edtFilesFolder = this->findChild<QLineEdit*>("edt_DefaultPartsFilesFolder");
+    auto btnFilesFolder = this->findChild<QPushButton*>("btn_ChooseDefaultPartsFilesFolder");
+    if (btnFilesFolder) {
+        connect(btnFilesFolder, &QPushButton::clicked, this, [this, edtFilesFolder]{
+            const QString folder = QFileDialog::getExistingDirectory(this,
+                                                              tr("Standard-Bauteilordner wählen"), QString(),
+                                                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+            if (!folder.isEmpty()) {
+                // Im Dialog merken (für MainWindow)
+                this->setProperty("chosenPartFilesPath", folder);
+                if (edtFilesFolder) edtFilesFolder->setText(QFileInfo(folder).filePath());
             }
         });
     }
@@ -32,18 +46,27 @@ void SettingsDialog::hookUpSignals() {
 
 void SettingsDialog::loadSettings() {
     QSettings s("Partorium","Partorium");
-    auto edt = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
-    if (edt) {
+    auto edtImagesFolder = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
+    if (edtImagesFolder) {
         const QString v = s.value("defaultImageFolder").toString();
-        edt->setText(v);
+        edtImagesFolder->setText(v);
+    }
+    auto edtFilesFolder = this->findChild<QLineEdit*>("edt_DefaultPartsFilesFolder");
+    if (edtFilesFolder) {
+        const QString v = s.value("defaultPartsFilesFolder").toString();
+        edtFilesFolder->setText(v);
     }
 }
 
 void SettingsDialog::saveSettings() {
     QSettings s("Partorium","Partorium");
-    auto edt = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
-    if (edt) {
-        s.setValue("defaultImageFolder", edt->text());
+    auto edtImagesFolder = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
+    if (edtImagesFolder) {
+        s.setValue("defaultImageFolder", edtImagesFolder->text());
+    }
+    auto edtFilesFolder = this->findChild<QLineEdit*>("edt_DefaultPartsFilesFolder");
+    if (edtFilesFolder) {
+        s.setValue("defaultPartsFilesFolder", edtFilesFolder->text());
     }
 }
 

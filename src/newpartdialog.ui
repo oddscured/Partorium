@@ -93,7 +93,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
@@ -362,7 +362,7 @@
     <rect>
      <x>10</x>
      <y>330</y>
-     <width>871</width>
+     <width>511</width>
      <height>70</height>
     </rect>
    </property>
@@ -387,10 +387,10 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="edt_FilePath"/>
+      <widget class="QLineEdit" name="edt_PartFilesFolder"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="btn_SelectPartFilesFolder">
        <property name="text">
         <string>...</string>
        </property>

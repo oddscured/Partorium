@@ -47,7 +47,7 @@
     <property name="title">
      <string>Infos</string>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -185,19 +185,6 @@
     </property>
     <property name="text">
      <string>PartName</string>
-    </property>
-   </widget>
-   <widget class="QListView" name="lst_Images">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>280</y>
-      <width>589</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="viewMode">
-     <enum>QListView::ViewMode::IconMode</enum>
     </property>
    </widget>
    <widget class="QLabel" name="lbl_Image">
@@ -364,7 +351,7 @@
     <property name="title">
      <string>Links</string>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>11</x>
@@ -451,15 +438,28 @@
      <string>HashtagsValue</string>
     </property>
    </widget>
-   <widget class="QTextEdit" name="txt_Description">
+   <widget class="QGroupBox" name="grp_Description">
     <property name="geometry">
      <rect>
-      <x>202</x>
-      <y>351</y>
-      <width>589</width>
-      <height>261</height>
+      <x>200</x>
+      <y>280</y>
+      <width>591</width>
+      <height>341</height>
      </rect>
     </property>
+    <property name="title">
+     <string>Beschreibung</string>
+    </property>
+    <widget class="QTextEdit" name="txt_Description">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>571</width>
+       <height>301</height>
+      </rect>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -468,7 +468,7 @@
      <x>0</x>
      <y>0</y>
      <width>1079</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
