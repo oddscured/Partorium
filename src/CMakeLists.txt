@@ -30,6 +30,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         part.h
         jsonpartrepository.h jsonpartrepository.cpp
         settingsdialog.h settingsdialog.cpp settingsdialog.ui
+        TODO.md
+        guiutils.h guiutils.cpp
+
+
 
 
     )

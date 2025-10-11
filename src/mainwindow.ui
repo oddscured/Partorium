@@ -41,19 +41,19 @@
       <x>200</x>
       <y>80</y>
       <width>311</width>
-      <height>181</height>
+      <height>191</height>
      </rect>
     </property>
     <property name="title">
      <string>Infos</string>
     </property>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QWidget" name="">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>23</y>
-       <width>271</width>
-       <height>138</height>
+       <y>24</y>
+       <width>214</width>
+       <height>162</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="formLayout_3">
@@ -144,6 +144,20 @@
        <widget class="QLabel" name="lbl_QuantityValue">
         <property name="text">
          <string>AmountValue</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="lbl_Price">
+        <property name="text">
+         <string>Preis:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLabel" name="lbl_PriceValue">
+        <property name="text">
+         <string>Price</string>
         </property>
        </widget>
       </item>
@@ -333,7 +347,7 @@
       <x>520</x>
       <y>160</y>
       <width>269</width>
-      <height>101</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="sizePolicy">
