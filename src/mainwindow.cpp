@@ -207,10 +207,21 @@ void MainWindow::showPart(const Part& p) {
     ui->txt_Description->setPlainText(p.description);
 
     //Bild laden, auf Größe des Labels skalieren und dann dort anzeigen
-    QPixmap partPixmap(p.imagePath);
-    QPixmap scaledPartPixmap = partPixmap.scaled(ui->lbl_Image->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    //ui->lbl_Image->setScaledContents(true);
-    ui->lbl_Image->setPixmap(scaledPartPixmap);
+    if(p.imagePath .isEmpty()) {
+        ui->lbl_Image->setPixmap(QPixmap()); // leeren
+        ui->lbl_Image->setText(tr("Kein Bild"));
+        ui->lbl_Image->setAlignment(Qt::AlignCenter);
+        //ui->lbl_Image->setScaledContents(false);
+        //ui->lbl_Image->setStyleSheet("border: 1px solid gray;"); // optionaler Rahmen
+    }
+    else
+    {
+        QPixmap partPixmap(p.imagePath);
+        QPixmap scaledPartPixmap = partPixmap.scaled(ui->lbl_Image->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        //ui->lbl_Image->setScaledContents(true);
+        ui->lbl_Image->setPixmap(scaledPartPixmap);
+    }
+
 
     // Dateienliste rechts
     ui->lst_Files->clear();
@@ -283,9 +294,9 @@ void MainWindow::addNewPart() {
     if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
     if (auto w = getLE("edt_Type"))                     p.type                 = w->text();
     if (auto w = getLE("edt_Format"))                   p.format               = w->text();
-    if (auto w = getLE("edt_SupplierLink"))             p.supplierLink         = w->text();
-    if (auto w = getLE("edt_AltSupplierLink"))          p.altSupplierLink      = w->text();
-    if (auto w = getLE("edt_manufacturerLink"))         p.manufacturerLink     = w->text();
+    if (auto w = getLE("edt_SourceLink"))               p.supplierLink         = w->text();
+    if (auto w = getLE("edt_AlternativeSourceLink"))    p.altSupplierLink      = w->text();
+    if (auto w = getLE("edt_ManufacturerLink"))         p.manufacturerLink     = w->text();
 
 
     if (auto w = getLE("edt_PartFilesFolder")) {
