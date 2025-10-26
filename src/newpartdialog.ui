@@ -214,13 +214,13 @@
    <property name="title">
     <string>Links</string>
    </property>
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>31</y>
+      <x>11</x>
+      <y>20</y>
       <width>331</width>
-      <height>178</height>
+      <height>193</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -238,7 +238,11 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="edt_Source"/>
+      <widget class="QComboBox" name="cbb_Source">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lbl_Source_2">
@@ -258,7 +262,11 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="edt_AlternativeSource"/>
+      <widget class="QComboBox" name="cbb_AlternativeSource">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="lbl_Source_3">
@@ -278,7 +286,11 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="edt_Manufacturer"/>
+      <widget class="QComboBox" name="cbb_Manufacturer">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="lbl_Manufacturer_2">

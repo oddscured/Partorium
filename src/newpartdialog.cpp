@@ -21,6 +21,14 @@ void NewPartDialog::hookUpSignals() {
     const QString defaultImageFolder = s.value("defaultImageFolder").toString();
     const QString defaultPartsFilesFolder = s.value("defaultPartsFilesFolder").toString();
 
+    // UI Elemente vorbereiten
+    QComboBox *cbb_Source = this->findChild<QComboBox*>("cbb_Source");
+    cbb_Source->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"});
+    QComboBox *cbb_AltSource = this->findChild<QComboBox*>("cbb_AlternativeSource");
+    cbb_AltSource->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"}); //TODO: remove redundancy
+    QComboBox *cbb_Manufacturer = this->findChild<QComboBox*>("cbb_Manufacturer");
+    cbb_Manufacturer->addItems({"", "ELV"});
+
     // UI Elemente suchen und zuordnen
     auto btnFolder = this->findChild<QPushButton*>("btn_SelectPartFilesFolder");
     auto btnImg = this->findChild<QPushButton*>("btn_ChooseImage");

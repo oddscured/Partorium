@@ -15,6 +15,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include "guiutils.h"
+#include <QFileIconProvider>
+#include <QMimeDatabase>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -223,7 +225,8 @@ void MainWindow::showPart(const Part& p) {
     }
 
 
-    // Dateienliste rechts
+    // Dateienliste rechts (alt, zeigt nur Ordner)
+    /*
     ui->lst_Files->clear();
     for (const auto& path : p.localFiles) {
         auto fi = QFileInfo(path);
@@ -231,6 +234,107 @@ void MainWindow::showPart(const Part& p) {
         it->setToolTip(path);
         it->setData(Qt::UserRole, path);
         ui->lst_Files->addItem(it);
+    }
+    */
+
+    /*
+    // Dateienliste rechts
+    ui->lst_Files->clear();
+
+    for (const auto& path : p.localFiles) {
+        QFileInfo fi(path);
+
+        if (fi.exists() && fi.isDir()) {
+            // If this localFiles entry is a directory, list all files inside (non-recursive)
+            QDir dir(fi.absoluteFilePath());
+            const auto entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+            if (entries.isEmpty()) {
+                // show an inert "empty folder" entry so the user can open the folder if desired
+                auto* it = new QListWidgetItem(tr("[Ordner leer] %1").arg(fi.fileName()));
+                it->setToolTip(fi.absoluteFilePath());
+                it->setData(Qt::UserRole, fi.absoluteFilePath());
+                it->setData(Qt::UserRole + 1, true); // mark as directory item (optional)
+                ui->lst_Files->addItem(it);
+            } else {
+                for (const auto& efi : entries) {
+                    auto* it = new QListWidgetItem(efi.fileName());
+                    it->setToolTip(efi.absoluteFilePath());
+                    it->setData(Qt::UserRole, efi.absoluteFilePath()); // full path for activation
+                    ui->lst_Files->addItem(it);
+                }
+            }
+        } else {
+            // treat as file (existing or not) - display file name if possible, otherwise show path
+            const QString label = fi.exists() ? fi.fileName() : path;
+            auto* it = new QListWidgetItem(label);
+            it->setToolTip(path);
+            it->setData(Qt::UserRole, QFileInfo(path).absoluteFilePath());
+            ui->lst_Files->addItem(it);
+        }
+    }
+*/
+
+    // Dateiliste rechts mit Icons
+    // Dateienliste rechts (with icons)
+    ui->lst_Files->clear();
+
+    QFileIconProvider iconProvider;
+    QMimeDatabase mimeDb;
+
+    auto makeIconForFileInfo = [&](const QFileInfo &fi) -> QIcon {
+        // Try mime-theme icon first (works well on Linux with icon themes)
+        if (fi.exists() && fi.isFile()) {
+            const QMimeType mt = mimeDb.mimeTypeForFile(fi);
+            const QString iconName = mt.iconName();
+            if (!iconName.isEmpty()) {
+                QIcon ic = QIcon::fromTheme(iconName);
+                if (!ic.isNull()) return ic;
+            }
+        }
+
+        // Fall back to the platform file icon provider
+        QIcon ic = iconProvider.icon(fi);
+        if (!ic.isNull()) return ic;
+
+        // Final fallback: standard file/folder icon from the widget style
+        if (fi.exists() && fi.isDir())
+            return this->style()->standardIcon(QStyle::SP_DirIcon);
+        return this->style()->standardIcon(QStyle::SP_FileIcon);
+    };
+
+    for (const auto& path : p.localFiles) {
+        QFileInfo fi(path);
+
+        if (fi.exists() && fi.isDir()) {
+            // If this localFiles entry is a directory, list all files inside (non-recursive)
+            QDir dir(fi.absoluteFilePath());
+            const auto entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+            if (entries.isEmpty()) {
+                // show an inert "empty folder" entry so the user can open the folder if desired
+                auto* it = new QListWidgetItem(tr("[Ordner leer] %1").arg(fi.fileName()));
+                it->setToolTip(fi.absoluteFilePath());
+                it->setData(Qt::UserRole, fi.absoluteFilePath());
+                it->setIcon(makeIconForFileInfo(fi)); // folder icon
+                it->setData(Qt::UserRole + 1, true); // mark as directory item (optional)
+                ui->lst_Files->addItem(it);
+            } else {
+                for (const auto& efi : entries) {
+                    auto* it = new QListWidgetItem(efi.fileName());
+                    it->setToolTip(efi.absoluteFilePath());
+                    it->setData(Qt::UserRole, efi.absoluteFilePath()); // full path for activation
+                    it->setIcon(makeIconForFileInfo(efi));
+                    ui->lst_Files->addItem(it);
+                }
+            }
+        } else {
+            // treat as file (existing or not) - display file name if possible, otherwise show path
+            const QString label = fi.exists() ? fi.fileName() : path;
+            auto* it = new QListWidgetItem(label);
+            it->setToolTip(path);
+            it->setData(Qt::UserRole, QFileInfo(path).absoluteFilePath());
+            it->setIcon(makeIconForFileInfo(fi));
+            ui->lst_Files->addItem(it);
+        }
     }
 
     // Bilderstreifen (aktuell: Pfade -> Thumbnails)
@@ -280,6 +384,12 @@ void MainWindow::addNewPart() {
         return w;
     };
 
+    auto getCBB = [&](const char* name) -> QComboBox* {
+        auto w = dlg.findChild<QComboBox*>(name);
+        if (!w) qWarning() << "QComboBox not found:" << name;
+        return w;
+    };
+
     // --- Felder lesen (null-sicher) ---
     Part p;
     if (auto w = getLE("edt_PartName"))                 p.name                 = w->text();
@@ -287,9 +397,9 @@ void MainWindow::addNewPart() {
     if (auto w = getLE("edt_Category"))                 p.category             = w->text();
     if (auto w = getLE("edt_Subcategory"))              p.subcategory          = w->text();
     if (auto w = getPTE("txt_Description"))             p.description          = w->toPlainText();
-    if (auto w = getLE("edt_Source"))                   p.supplier             = w->text();
-    if (auto w = getLE("edt_AlternativeSource"))        p.altSupplier          = w->text();
-    if (auto w = getLE("edt_Manufacturer"))             p.manufacturer         = w->text();
+    if (auto w = getCBB("cbb_Source"))                  p.supplier             = w->currentText();
+    if (auto w = getCBB("edt_AlternativeSource"))       p.altSupplier          = w->currentText();
+    if (auto w = getCBB("edt_Manufacturer"))            p.manufacturer         = w->currentText();
     if (auto w = getLE("edt_StorageLocation"))          p.storage              = w->text();
     if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
     if (auto w = getLE("edt_Type"))                     p.type                 = w->text();
@@ -404,6 +514,13 @@ void MainWindow::editPart(int id) {
     auto setSB = [&](const char* name, int v){
         if (auto w = dlg.findChild<QSpinBox*>(name)) w->setValue(v);
     };
+    auto setCBB = [&](const char* name, const QString& v){
+        if (auto w = dlg.findChild<QComboBox*>(name)) {
+            int idx = w->findText(v);
+            if (idx >= 0) w->setCurrentIndex(idx);
+            else w->setCurrentText(v);
+        }
+    };
 
     // Felder vorbefüllen (Namen aus newpartdialog.ui)
     setLE("edt_PartName",               p.name);
@@ -411,11 +528,11 @@ void MainWindow::editPart(int id) {
     setLE("edt_Category",               p.category);
     setLE("edt_Subcategory",            p.subcategory);
     setPTE("txt_Description",           p.description);
-    setLE("edt_Source",                 p.supplier);
+    setCBB("cbb_Source",                p.supplier);
     setLE("edt_SourceLink",             p.supplierLink);
-    setLE("edt_AlternativeSource",      p.altSupplier);
+    setCBB("cbb_AlternativeSource",     p.altSupplier);
     setLE("edt_AlternativeSourceLink",  p.altSupplierLink);
-    setLE("edt_Manufacturer",           p.manufacturer);
+    setCBB("cbb_Manufacturer",          p.manufacturer);
     setLE("edt_ManufacturerLink",       p.manufacturerLink);
     setLE("edt_StorageLocation",        p.storage);
     setLE("edt_StorageLocationDetails", p.storageDetails);
@@ -441,17 +558,18 @@ void MainWindow::editPart(int id) {
     auto getLE = [&](const char* name) -> QLineEdit* { return dlg.findChild<QLineEdit*>(name); };
     auto getPTE= [&](const char* name) -> QTextEdit* { return dlg.findChild<QTextEdit*>(name); };
     auto getSB = [&](const char* name) -> QSpinBox*  { return dlg.findChild<QSpinBox*>(name); };
+    auto getCBB = [&](const char* name) -> QComboBox* { return dlg.findChild<QComboBox*>(name); };
 
     if (auto w = getLE("edt_PartName"))               p.name = w->text().trimmed();
     if (auto w = getLE("edt_ShortDescription"))       p.shortDescription = w->text().trimmed();
     if (auto w = getLE("edt_Category"))               p.category = w->text().trimmed();
     if (auto w = getLE("edt_Subcategory"))            p.subcategory = w->text().trimmed();
     if (auto w = getPTE("txt_Description"))           p.description = w->toPlainText().trimmed();
-    if (auto w = getLE("edt_Source"))                 p.supplier = w->text().trimmed();
+    if (auto w = getCBB("cbb_Source"))                p.supplier = w->currentText().trimmed();
     if (auto w = getLE("edt_SourceLink"))             p.supplierLink = w->text().trimmed();
-    if (auto w = getLE("edt_AlternativeSource"))      p.altSupplier = w->text().trimmed();
+    if (auto w = getCBB("cbb_AlternativeSource"))     p.altSupplier = w->currentText().trimmed();
     if (auto w = getLE("edt_AlternativeSourceLink"))  p.altSupplierLink = w->text().trimmed();
-    if (auto w = getLE("edt_Manufacturer"))           p.manufacturer = w->text().trimmed();
+    if (auto w = getCBB("cbb_Manufacturer"))          p.manufacturer = w->currentText().trimmed();
     if (auto w = getLE("edt_ManufacturerLink"))       p.manufacturerLink = w->text().trimmed();
     if (auto w = getLE("edt_StorageLocation"))        p.storage = w->text().trimmed();
     if (auto w = getLE("edt_StorageLocationDetails")) p.storageDetails = w->text().trimmed();
