@@ -383,7 +383,6 @@ void MainWindow::addNewPart() {
         if (!w) qWarning() << "QSpinBox not found:" << name;
         return w;
     };
-
     auto getCBB = [&](const char* name) -> QComboBox* {
         auto w = dlg.findChild<QComboBox*>(name);
         if (!w) qWarning() << "QComboBox not found:" << name;
@@ -394,16 +393,16 @@ void MainWindow::addNewPart() {
     Part p;
     if (auto w = getLE("edt_PartName"))                 p.name                 = w->text();
     if (auto w = getLE("edt_ShortDescription"))         p.shortDescription     = w->text();
-    if (auto w = getLE("edt_Category"))                 p.category             = w->text();
-    if (auto w = getLE("edt_Subcategory"))              p.subcategory          = w->text();
+    if (auto w = getCBB("cbb_Category"))                p.category             = w->currentText();
+    if (auto w = getCBB("cbb_SubCategory"))             p.subcategory          = w->currentText();
     if (auto w = getPTE("txt_Description"))             p.description          = w->toPlainText();
     if (auto w = getCBB("cbb_Source"))                  p.supplier             = w->currentText();
-    if (auto w = getCBB("edt_AlternativeSource"))       p.altSupplier          = w->currentText();
-    if (auto w = getCBB("edt_Manufacturer"))            p.manufacturer         = w->currentText();
-    if (auto w = getLE("edt_StorageLocation"))          p.storage              = w->text();
+    if (auto w = getCBB("cbb_AlternativeSource"))       p.altSupplier          = w->currentText();
+    if (auto w = getCBB("cbb_Manufacturer"))            p.manufacturer         = w->currentText();
+    if (auto w = getCBB("cbb_StorageLocation"))         p.storage              = w->currentText();
     if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
-    if (auto w = getLE("edt_Type"))                     p.type                 = w->text();
-    if (auto w = getLE("edt_Format"))                   p.format               = w->text();
+    if (auto w = getCBB("cbb_Type"))                    p.type                 = w->currentText();
+    if (auto w = getCBB("cbb_Format"))                  p.format               = w->currentText();
     if (auto w = getLE("edt_SourceLink"))               p.supplierLink         = w->text();
     if (auto w = getLE("edt_AlternativeSourceLink"))    p.altSupplierLink      = w->text();
     if (auto w = getLE("edt_ManufacturerLink"))         p.manufacturerLink     = w->text();
@@ -525,8 +524,8 @@ void MainWindow::editPart(int id) {
     // Felder vorbefüllen (Namen aus newpartdialog.ui)
     setLE("edt_PartName",               p.name);
     setLE("edt_ShortDescription",       p.shortDescription);
-    setLE("edt_Category",               p.category);
-    setLE("edt_Subcategory",            p.subcategory);
+    setCBB("cbb_Category",              p.category);
+    setCBB("cbb_SubCategory",           p.subcategory);
     setPTE("txt_Description",           p.description);
     setCBB("cbb_Source",                p.supplier);
     setLE("edt_SourceLink",             p.supplierLink);
@@ -534,10 +533,10 @@ void MainWindow::editPart(int id) {
     setLE("edt_AlternativeSourceLink",  p.altSupplierLink);
     setCBB("cbb_Manufacturer",          p.manufacturer);
     setLE("edt_ManufacturerLink",       p.manufacturerLink);
-    setLE("edt_StorageLocation",        p.storage);
+    setCBB("cbb_StorageLocation",       p.storage);
     setLE("edt_StorageLocationDetails", p.storageDetails);
-    setLE("edt_Format",                 p.format);
-    setLE("edt_Type",                   p.type);
+    setCBB("cbb_Format",                p.format);
+    setCBB("cbb_Type",                  p.type);
     setSB("spb_Quantity",               p.quantity);
     setLE("edt_Price",                  QString::number(p.price));
 
@@ -562,8 +561,8 @@ void MainWindow::editPart(int id) {
 
     if (auto w = getLE("edt_PartName"))               p.name = w->text().trimmed();
     if (auto w = getLE("edt_ShortDescription"))       p.shortDescription = w->text().trimmed();
-    if (auto w = getLE("edt_Category"))               p.category = w->text().trimmed();
-    if (auto w = getLE("edt_Subcategory"))            p.subcategory = w->text().trimmed();
+    if (auto w = getCBB("cbb_Category"))              p.category = w->currentText().trimmed();
+    if (auto w = getCBB("cbb_SubCategory"))           p.subcategory = w->currentText().trimmed();
     if (auto w = getPTE("txt_Description"))           p.description = w->toPlainText().trimmed();
     if (auto w = getCBB("cbb_Source"))                p.supplier = w->currentText().trimmed();
     if (auto w = getLE("edt_SourceLink"))             p.supplierLink = w->text().trimmed();
@@ -571,10 +570,10 @@ void MainWindow::editPart(int id) {
     if (auto w = getLE("edt_AlternativeSourceLink"))  p.altSupplierLink = w->text().trimmed();
     if (auto w = getCBB("cbb_Manufacturer"))          p.manufacturer = w->currentText().trimmed();
     if (auto w = getLE("edt_ManufacturerLink"))       p.manufacturerLink = w->text().trimmed();
-    if (auto w = getLE("edt_StorageLocation"))        p.storage = w->text().trimmed();
+    if (auto w = getCBB("cbb_StorageLocation"))       p.storage = w->currentText().trimmed();
     if (auto w = getLE("edt_StorageLocationDetails")) p.storageDetails = w->text().trimmed();
-    if (auto w = getLE("edt_Format"))                 p.format = w->text().trimmed();
-    if (auto w = getLE("edt_Type"))                   p.type = w->text().trimmed();
+    if (auto w = getCBB("cbb_Format"))                p.format = w->currentText().trimmed();
+    if (auto w = getCBB("cbb_Type"))                  p.type = w->currentText().trimmed();
 
     p.localFiles.clear();
     if (auto w = getLE("edt_PartFilesFolder")) {

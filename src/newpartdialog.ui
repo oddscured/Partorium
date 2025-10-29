@@ -44,9 +44,9 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>272</x>
+      <x>312</x>
       <y>32</y>
-      <width>231</width>
+      <width>191</width>
       <height>241</height>
      </rect>
     </property>
@@ -96,10 +96,10 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>11</x>
-      <y>32</y>
-      <width>245</width>
-      <height>240</height>
+      <x>12</x>
+      <y>33</y>
+      <width>291</width>
+      <height>260</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_2">
@@ -137,7 +137,11 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="edt_Type"/>
+      <widget class="QComboBox" name="cbb_Type">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="lbl_Category">
@@ -147,7 +151,11 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLineEdit" name="edt_Category"/>
+      <widget class="QComboBox" name="cbb_Category">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="4" column="0">
       <widget class="QLabel" name="lbl_Subcategory">
@@ -157,7 +165,11 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="edt_Subcategory"/>
+      <widget class="QComboBox" name="cbb_SubCategory">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="lbl_Format">
@@ -167,7 +179,11 @@
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLineEdit" name="edt_Format"/>
+      <widget class="QComboBox" name="cbb_Format">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="6" column="0">
       <widget class="QLabel" name="lbl_Quantity">
@@ -214,7 +230,7 @@
    <property name="title">
     <string>Links</string>
    </property>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
@@ -343,10 +359,10 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>26</y>
+      <x>11</x>
+      <y>20</y>
       <width>331</width>
-      <height>54</height>
+      <height>59</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_3">
@@ -364,10 +380,11 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="edt_StorageLocation"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="edt_StorageLocationDetails"/>
+      <widget class="QComboBox" name="cbb_StorageLocation">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lbl_StorageLocationDetails">
@@ -375,6 +392,9 @@
         <string>Details</string>
        </property>
       </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="edt_StorageLocationDetails"/>
      </item>
     </layout>
    </widget>

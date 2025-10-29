@@ -28,6 +28,17 @@ void NewPartDialog::hookUpSignals() {
     cbb_AltSource->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"}); //TODO: remove redundancy
     QComboBox *cbb_Manufacturer = this->findChild<QComboBox*>("cbb_Manufacturer");
     cbb_Manufacturer->addItems({"", "ELV"});
+    QComboBox *cbb_Category = this->findChild<QComboBox*>("cbb_Category");
+    cbb_Category->addItems({"", "Sensoren", "Aktoren", "Module", "Kabel & Stecker", "Sonstiges"});
+    QComboBox *cbb_SubCategory = this->findChild<QComboBox*>("cbb_SubCategory");
+    cbb_SubCategory->addItems({"", "Temperatursensoren", "Feuchtigkeitssensoren", "Bewegungssensoren", "Displays", "Motoren", "Relais", "Breadboards", "Jumper Kabel"});
+    QComboBox *cbb_Storage = this->findChild<QComboBox*>("cbb_StorageLocation");
+    cbb_Storage->addItems({"", "Schublade A1", "Schublade A2", "Box 1", "Box 2"});
+    QComboBox *cbb_Format = this->findChild<QComboBox*>("cbb_Format");
+    cbb_Format->addItems({"", "SMD", "DIP", "Sonstiges"});
+    QComboBox *cbb_Type = this->findChild<QComboBox*>("cbb_Type");
+    cbb_Type->addItems({"", "Widerstand", "Kondensator", "Transistor", "IC", "Sonstiges"});
+
 
     // UI Elemente suchen und zuordnen
     auto btnFolder = this->findChild<QPushButton*>("btn_SelectPartFilesFolder");
