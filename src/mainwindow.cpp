@@ -360,7 +360,13 @@ void MainWindow::openSettingsDialog() {
 }
 
 void MainWindow::openListManager() {
+
+    QMap<QString, QStringList> presets;
+    presets[tr("Kategorie")] = {"Widerstand", "Kondensator", "Transistor"};
+    presets[tr("Gehäuse")]   = {"SMD", "THT"};
+
     ListManagerDialog dlg(this);
+    dlg.setPresets(presets, "Kategorie");
     if (dlg.exec() != QDialog::Accepted) return;
 }
 
