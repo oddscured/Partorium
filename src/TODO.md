@@ -2,8 +2,6 @@
 [ ] add selectable currency symbol to settings dialog and new part dialog + main window 
 
 [ ] add language selection to settings symbol and/or main menu bar 
- 
-[ ] show every file located in parts folder in "files" list view
 
 [ ] show additional images when clicking on main part image
 ##
@@ -23,9 +21,11 @@
 
 [ ] validation of .json file before loading
 
-[ ] show all files in parts folder
+[x] show all files in parts folder
 
-[ ] add filetype icons in parts folder view (lst_Files)
+[x] add filetype icons in parts folder view (lst_Files)
+
+[ ] create separate dialog to create categories
 
 ##
 

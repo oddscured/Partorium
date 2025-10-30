@@ -17,6 +17,7 @@
 #include "guiutils.h"
 #include <QFileIconProvider>
 #include <QMimeDatabase>
+#include "listmanagerdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_SelectDatabase, &QAction::triggered, this, &MainWindow::chooseDatabasePath);
     connect(ui->act_OpenDatabaseFolder, &QAction::triggered, this, &MainWindow::revealDatabaseFolder);
     connect(ui->act_OpenSettingsDialog, &QAction::triggered, this, &MainWindow::openSettingsDialog);
+    connect(ui->act_ListManager, &QAction::triggered, this, &MainWindow::openListManager);
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
     connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,
@@ -354,6 +356,11 @@ void MainWindow::onFileActivated(QListWidgetItem* item) {
 
 void MainWindow::openSettingsDialog() {
     SettingsDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted) return;
+}
+
+void MainWindow::openListManager() {
+    ListManagerDialog dlg(this);
     if (dlg.exec() != QDialog::Accepted) return;
 }
 

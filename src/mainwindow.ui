@@ -495,8 +495,10 @@
     <addaction name="act_OpenDatabaseFolder"/>
     <addaction name="separator"/>
     <addaction name="act_OpenSettingsDialog"/>
+    <addaction name="act_ListManager"/>
     <addaction name="separator"/>
     <addaction name="act_Quit"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuWerkzeuge">
     <property name="title">
@@ -551,6 +553,11 @@
    </property>
    <property name="text">
     <string>Gelöschte Bauteile anzeigen</string>
+   </property>
+  </action>
+  <action name="act_ListManager">
+   <property name="text">
+    <string>Listen verwalten</string>
    </property>
   </action>
  </widget>

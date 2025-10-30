@@ -34,6 +34,7 @@ private:
     void revealDatabaseFolder();
     void loadOrInitRepository(const QString& path = QString());
     void openSettingsDialog();
+    void openListManager();
 
     // Neue Option zum Löschen und Ändern
 

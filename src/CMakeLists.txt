@@ -32,6 +32,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         settingsdialog.h settingsdialog.cpp settingsdialog.ui
         TODO.md
         guiutils.h guiutils.cpp
+        listmanagerdialog.h listmanagerdialog.cpp listmanagerdialog.ui
 
 
 
