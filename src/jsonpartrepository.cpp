@@ -6,6 +6,9 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QFileInfo>
+#include <QJsonValue>
+#include <QJsonObject>
+
 
 JsonPartRepository::JsonPartRepository(QObject* parent, const QString& initialPath)
     : QObject(parent)
@@ -180,4 +183,93 @@ QVector<Part> JsonPartRepository::searchParts(const QString& term,
     std::sort(out.begin(), out.end(),
               [](const Part& a, const Part& b){ return a.name.localeAwareCompare(b.name) < 0; });
     return out;
+}
+
+// ---- Vorgabelisten (Combobox-Presets) ----
+
+// ---- Presets JSON Pfad ----
+     QString JsonPartRepository::presetsJsonPath() const {
+    if (m_path.isEmpty()) return QString();
+    const QFileInfo fi(m_path);
+    return fi.absoluteDir().absoluteFilePath("partorium_lists.json");
+}
+
+// ---- Hilfen: JSON <-> Map ----
+static JsonPartRepository::PresetsMap jsonToPresetsMap(const QJsonObject& root) {
+    JsonPartRepository::PresetsMap map;
+
+    // 1) Bevorzugt "lists" lesen, wenn vorhanden:
+    if (root.contains("lists") && root["lists"].isObject()) {
+        const auto listsObj = root["lists"].toObject();
+        for (const auto& key : listsObj.keys()) {
+            QStringList arr;
+            for (const auto& v : listsObj[key].toArray()) arr << v.toString();
+            map.insert(key, arr);
+        }
+        return map;
+    }
+
+    // 2) Fallback: flaches Mapping (Top-Level keys direkt Arrays)
+    for (const auto& key : root.keys()) {
+        if (!root[key].isArray()) continue;
+        QStringList arr;
+        for (const auto& v : root[key].toArray()) arr << v.toString();
+        map.insert(key, arr);
+    }
+    return map;
+}
+
+static QJsonObject presetsMapToJson(const JsonPartRepository::PresetsMap& map) {
+    QJsonObject listsObj;
+    for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
+        listsObj[it.key()] = QJsonArray::fromStringList(it.value());
+    }
+    QJsonObject root;
+    root["lists"] = listsObj;
+    root["updatedAt"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+    return root;
+}
+
+// ---- Laden ----
+bool JsonPartRepository::loadPresets(JsonPartRepository::PresetsMap& out) const {
+    const QString path = presetsJsonPath();
+    if (path.isEmpty()) return false;
+
+    // Datei ggf. anlegen
+    ensureParentDirExists(path);
+    if (!QFileInfo::exists(path)) {
+        QFile nf(path);
+        if (!nf.open(QIODevice::WriteOnly)) return false;
+        // leeres Grundgerüst schreiben
+        QJsonObject emptyRoot;
+        emptyRoot["lists"] = QJsonObject(); // leer
+        nf.write(QJsonDocument(emptyRoot).toJson(QJsonDocument::Indented));
+        nf.close();
+        out.clear();
+        return true;
+    }
+
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) return false;
+    const auto doc = QJsonDocument::fromJson(f.readAll());
+    f.close();
+    if (!doc.isObject()) { out.clear(); return false; }
+
+    out = jsonToPresetsMap(doc.object());
+    return true;
+}
+
+// ---- Speichern ----
+bool JsonPartRepository::savePresets(const JsonPartRepository::PresetsMap& in) const {
+    const QString path = presetsJsonPath();
+    if (path.isEmpty()) return false;
+    if (!ensureParentDirExists(path)) return false;
+
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return false;
+
+    const auto root = presetsMapToJson(in);
+    f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+    f.close();
+    return true;
 }

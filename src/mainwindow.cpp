@@ -361,17 +361,37 @@ void MainWindow::openSettingsDialog() {
 
 void MainWindow::openListManager() {
 
-    QMap<QString, QStringList> presets;
-    presets[tr("Kategorie")] = {"Widerstand", "Kondensator", "Transistor"};
-    presets[tr("Gehäuse")]   = {"SMD", "THT"};
+    if (!m_repo) return;
 
+    // 1) Laden
+    JsonPartRepository::PresetsMap presets;
+    if (!m_repo->loadPresets(presets)) {
+        QMessageBox::warning(this, tr("Hinweis"),
+                             tr("Vorgabelisten konnten nicht geladen werden. Es wird leer gestartet."));
+    }
+
+    // 2) Dialog öffnen
     ListManagerDialog dlg(this);
-    dlg.setPresets(presets, "Kategorie");
-    if (dlg.exec() != QDialog::Accepted) return;
+    dlg.setWindowTitle(tr("Vorgabelisten verwalten"));
+    dlg.setPresets(presets, /*currentKey=*/QString()); // optional den Start-Key setzen
+
+    // 3) Änderungen übernehmen (bei OK)
+    if (dlg.exec() == QDialog::Accepted) {
+        const auto newPresets = dlg.presets();
+        if (!m_repo->savePresets(newPresets)) {
+            QMessageBox::critical(this, tr("Fehler"),
+                                  tr("Vorgabelisten konnten nicht gespeichert werden."));
+            return;
+        }
+
+        // 4) (Optional) ComboBoxen der UI aktualisieren
+        //    -> siehe nächsten Schritt
+        // refreshPresetBackedCombos(newPresets);
+    }
 }
 
 void MainWindow::addNewPart() {
-    NewPartDialog dlg(this);
+    NewPartDialog dlg(m_repo, this);
     if (dlg.exec() != QDialog::Accepted) return;
 
     // --- Repository vorhanden? ---
@@ -514,7 +534,7 @@ void MainWindow::editPart(int id) {
     if (!pOpt) return;
     Part p = *pOpt;
 
-    NewPartDialog dlg(this);
+    NewPartDialog dlg(m_repo, this);
     dlg.setWindowTitle(tr("Bauteil bearbeiten"));
 
     auto setLE = [&](const char* name, const QString& v){
@@ -632,4 +652,10 @@ void MainWindow::restorePart(int id) {
         Part u = *p; u.deleted = false;
         if (m_repo->updatePart(u)) { applyFilters(); /* selectPartById(u.id); */ }
     }
+}
+
+// Beispiel: Menü-Action „Vorgabelisten…“
+void MainWindow::on_act_ManagePresets_triggered()
+{
+
 }

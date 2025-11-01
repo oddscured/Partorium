@@ -1,19 +1,30 @@
 #include "newpartdialog.h"
 #include "ui_newpartdialog.h"
+#include "listmanagerdialog.h"
+#include "jsonpartrepository.h"
 #include <QFileDialog>
 #include <QLabel>
 #include <QFileInfo>
 #include <QSettings>
+#include "guiutils.h"
 
-NewPartDialog::NewPartDialog(QWidget *parent)
+NewPartDialog::NewPartDialog(JsonPartRepository* repo, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::NewPartDialog)
+    , m_repo(repo)
 {
     ui->setupUi(this);
     hookUpSignals();
+
+
 }
 
 NewPartDialog::~NewPartDialog() { delete ui; }
+
+void NewPartDialog::prepareUI()
+{
+
+}
 
 void NewPartDialog::hookUpSignals() {
     // Einstellungen laden
@@ -22,6 +33,13 @@ void NewPartDialog::hookUpSignals() {
     const QString defaultPartsFilesFolder = s.value("defaultPartsFilesFolder").toString();
 
     // UI Elemente vorbereiten
+    JsonPartRepository::PresetsMap presets;
+    m_repo->loadPresets(presets);
+    GuiUtils::applyPresetToCombo(ui->cbb_Category, presets, "Kategorie");
+    GuiUtils::applyPresetToCombo(ui->cbb_Format, presets, "Format");
+
+
+    /*
     QComboBox *cbb_Source = this->findChild<QComboBox*>("cbb_Source");
     cbb_Source->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"});
     QComboBox *cbb_AltSource = this->findChild<QComboBox*>("cbb_AlternativeSource");
@@ -38,6 +56,7 @@ void NewPartDialog::hookUpSignals() {
     cbb_Format->addItems({"", "SMD", "DIP", "Sonstiges"});
     QComboBox *cbb_Type = this->findChild<QComboBox*>("cbb_Type");
     cbb_Type->addItems({"", "Widerstand", "Kondensator", "Transistor", "IC", "Sonstiges"});
+*/
 
 
     // UI Elemente suchen und zuordnen
@@ -76,6 +95,5 @@ void NewPartDialog::hookUpSignals() {
             }
         });
     }
-
-
 }
+

@@ -35,7 +35,7 @@ private:
     void loadOrInitRepository(const QString& path = QString());
     void openSettingsDialog();
     void openListManager();
-
+    void on_act_ManagePresets_triggered();
     // Neue Option zum Löschen und Ändern
 
 

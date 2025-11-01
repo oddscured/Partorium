@@ -1,6 +1,11 @@
+#pragma once
+#include <QComboBox>
+#include <QMap>
+#include <QStringList>
 #include "guiutils.h"
 
 //GuiUtils::GuiUtils() {}
+
 
 void GuiUtils::setLabelWithOptionalLink(QLabel* label, const QString& text, const QString& link)
 {
@@ -16,4 +21,19 @@ void GuiUtils::setLabelWithOptionalLink(QLabel* label, const QString& text, cons
     {
         label->setText(text);
     }
+}
+
+void GuiUtils::applyPresetToCombo(QComboBox *combo,
+                        const QMap<QString, QStringList> &presets,
+                        const QString &key,
+                        bool editable)
+{
+    if (!combo) return;
+
+    combo->blockSignals(true);
+    combo->clear();
+    combo->addItems(presets.value(key));
+    combo->setEditable(editable);
+    combo->setInsertPolicy(QComboBox::InsertAtTop);
+    combo->blockSignals(false);
 }

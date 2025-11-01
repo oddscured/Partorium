@@ -36,6 +36,16 @@ public:
                               const QString& category = QString(),
                               const QString& subcategory = QString()) const;
 
+    // ---- Vorgabelisten (Combobox-Presets) ----
+    using PresetsMap = QMap<QString, QStringList>;
+
+    // Pfad zur Listen-JSON: <Ordner von partorium.json>/partorium_lists.json
+    QString presetsJsonPath() const;
+
+    // Laden/Speichern der Listen; legt Datei bei Bedarf an (leer).
+    bool loadPresets(PresetsMap& out) const;
+    bool savePresets(const PresetsMap& in) const;
+
 private:
     QString m_path;               // kompletter Pfad zur JSON-Datei
     QVector<Part> m_parts;
