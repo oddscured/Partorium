@@ -44,10 +44,10 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>312</x>
-      <y>32</y>
+      <x>310</x>
+      <y>100</y>
       <width>191</width>
-      <height>241</height>
+      <height>192</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -58,6 +58,9 @@
          <width>0</width>
          <height>150</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid grey;</string>
        </property>
        <property name="text">
         <string>IMAGE</string>
@@ -93,206 +96,289 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QLineEdit" name="edt_ShortDescription">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>291</width>
-      <height>262</height>
+      <x>129</x>
+      <y>62</y>
+      <width>371</width>
+      <height>21</height>
      </rect>
     </property>
-    <layout class="QFormLayout" name="formLayout_2">
-     <property name="labelAlignment">
-      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-     <property name="formAlignment">
-      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="lbl_Name">
-       <property name="text">
-        <string>Name</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="edt_PartName">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lbl_ShortDescription">
-       <property name="text">
-        <string>Kurzbeschreibung</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="edt_ShortDescription">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="lbl_Type">
-       <property name="text">
-        <string>Typ</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cbb_Type">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>120</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="lbl_Category">
-       <property name="text">
-        <string>Kategorie</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QComboBox" name="cbb_Category">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="lbl_Subcategory">
-       <property name="text">
-        <string>Unterkategorie</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QComboBox" name="cbb_SubCategory">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="lbl_Format">
-       <property name="text">
-        <string>Format</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QComboBox" name="cbb_Format">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="lbl_Quantity">
-       <property name="text">
-        <string>Menge</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QSpinBox" name="spb_Quantity">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>50</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximum">
-        <number>500</number>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="lbl_Price">
-       <property name="text">
-        <string>Preis</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLineEdit" name="edt_Price">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>50</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>€</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spb_Quantity">
+    <property name="geometry">
+     <rect>
+      <x>129</x>
+      <y>237</y>
+      <width>50</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>50</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximum">
+     <number>500</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Subcategory">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>165</y>
+      <width>90</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Unterkategorie</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cbb_Type">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>91</y>
+      <width>171</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>120</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cbb_SubCategory">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>163</y>
+      <width>171</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cbb_Category">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>127</y>
+      <width>171</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Price">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>268</y>
+      <width>30</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Preis</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_ShortDescription">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>62</y>
+      <width>110</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Kurzbeschreibung</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Format">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>201</y>
+      <width>43</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Format</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cbb_Format">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>199</y>
+      <width>171</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Category">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>129</y>
+      <width>58</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Kategorie</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Quantity">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>237</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Menge</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Type">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>93</y>
+      <width>22</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Typ</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="edt_PartName">
+    <property name="geometry">
+     <rect>
+      <x>129</x>
+      <y>31</y>
+      <width>371</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_Name">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>31</y>
+      <width>35</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Name</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>182</x>
+      <y>270</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>€</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="edt_Price">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>268</y>
+      <width>50</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>50</width>
+      <height>16777215</height>
+     </size>
+    </property>
    </widget>
   </widget>
   <widget class="QGroupBox" name="grp_Links">
@@ -303,6 +389,12 @@
      <width>349</width>
      <height>221</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="title">
     <string>Links</string>
@@ -317,6 +409,9 @@
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::FieldGrowthPolicy::ExpandingFieldsGrow</enum>
+     </property>
      <property name="labelAlignment">
       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
@@ -472,22 +567,16 @@
    <property name="title">
     <string>Lagerort</string>
    </property>
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>11</x>
+      <x>14</x>
       <y>20</y>
       <width>331</width>
-      <height>59</height>
+      <height>60</height>
      </rect>
     </property>
-    <layout class="QFormLayout" name="formLayout_3">
-     <property name="labelAlignment">
-      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-     <property name="formAlignment">
-      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-     </property>
+    <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="lbl_StorageLocation">
        <property name="text">
@@ -498,7 +587,7 @@
      <item row="0" column="1">
       <widget class="QComboBox" name="cbb_StorageLocation">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>

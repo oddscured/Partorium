@@ -37,6 +37,12 @@ void NewPartDialog::hookUpSignals() {
     m_repo->loadPresets(presets);
     GuiUtils::applyPresetToCombo(ui->cbb_Category, presets, "Kategorie");
     GuiUtils::applyPresetToCombo(ui->cbb_Format, presets, "Format");
+    GuiUtils::applyPresetToCombo(ui->cbb_Manufacturer, presets, "Hersteller");
+    GuiUtils::applyPresetToCombo(ui->cbb_Source, presets, "Bezugsquelle");
+    GuiUtils::applyPresetToCombo(ui->cbb_StorageLocation, presets, "Lagerort");
+    GuiUtils::applyPresetToCombo(ui->cbb_SubCategory, presets, "Unterkategorie");
+    GuiUtils::applyPresetToCombo(ui->cbb_Type, presets, "Typ");
+    GuiUtils::applyPresetToCombo(ui->cbb_AlternativeSource, presets, "Bezugsquelle");
 
 
     /*

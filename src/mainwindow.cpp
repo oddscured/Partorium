@@ -207,7 +207,7 @@ void MainWindow::showPart(const Part& p) {
     GuiUtils::setLabelWithOptionalLink(ui->lbl_AlternativeSourceValue, p.altSupplier, p.altSupplierLink);
 
     // Hashtags (nur Text)
-    ui->lbl_HashtagsValues->setText(p.hashtags.join(", "));
+    //ui->lbl_HashtagsValues->setText(p.hashtags.join(", ")); //removed, still unused
     ui->txt_Description->setPlainText(p.description);
 
     //Bild laden, auf Größe des Labels skalieren und dann dort anzeigen

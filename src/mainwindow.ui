@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1079</width>
-    <height>710</height>
+    <height>678</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -426,32 +426,6 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QLabel" name="lbl_Hashtags">
-    <property name="geometry">
-     <rect>
-      <x>201</x>
-      <y>621</y>
-      <width>60</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Hashtags:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_HashtagsValues">
-    <property name="geometry">
-     <rect>
-      <x>269</x>
-      <y>621</y>
-      <width>88</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>HashtagsValue</string>
-    </property>
-   </widget>
    <widget class="QGroupBox" name="grp_Description">
     <property name="geometry">
      <rect>
@@ -482,7 +456,7 @@
      <x>0</x>
      <y>0</y>
      <width>1079</width>
-     <height>30</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">

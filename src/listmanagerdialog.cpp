@@ -39,11 +39,6 @@ ListManagerDialog::ListManagerDialog(QWidget *parent)
 {
     ui->setupUi(this);
 
-    //Standard-Listen einfügen
-    //QComboBox *cbb_Lists = this->findChild<QComboBox*>("cbb_Lists");
-    //->addItems({"Typ", "Kategorie", "Unterkategorie", "Format", "Bezugsquelle", "Hersteller", "Lagerort"});
-
-
     // sinnvolle Defaults
     ui->lst_Entries->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
