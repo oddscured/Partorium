@@ -567,7 +567,7 @@
    <property name="title">
     <string>Lagerort</string>
    </property>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>14</x>
@@ -658,6 +658,22 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QPushButton" name="btn_NextPart">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>590</y>
+     <width>100</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Nächstes Teil</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
   </widget>
  </widget>
  <resources/>

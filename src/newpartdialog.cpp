@@ -1,6 +1,6 @@
 #include "newpartdialog.h"
 #include "ui_newpartdialog.h"
-#include "listmanagerdialog.h"
+//#include "listmanagerdialog.h"
 #include "jsonpartrepository.h"
 #include <QFileDialog>
 #include <QLabel>
@@ -16,7 +16,7 @@ NewPartDialog::NewPartDialog(JsonPartRepository* repo, QWidget *parent)
     ui->setupUi(this);
     hookUpSignals();
 
-
+    //connect(ui->btn_NextPart, &QPushButton::clicked, this, &NewPartDialog::nextPartRequested);
 }
 
 NewPartDialog::~NewPartDialog() { delete ui; }
@@ -44,6 +44,18 @@ void NewPartDialog::hookUpSignals() {
     GuiUtils::applyPresetToCombo(ui->cbb_Type, presets, "Typ");
     GuiUtils::applyPresetToCombo(ui->cbb_AlternativeSource, presets, "Bezugsquelle");
 
+    // NextPart button aus der UI nehmen
+    if (auto nextBtn = this->findChild<QPushButton*>("btn_NextPart")) {
+        nextBtn->setAutoDefault(false); // Enter soll weiter OK drücken
+        nextBtn->setDefault(false);
+        connect(nextBtn, &QPushButton::clicked, this, [this](){
+            // Zum Debuggen:
+            qDebug() << "btn_NextPart clicked -> emit nextPartRequested()";
+            emit nextPartRequested();
+        });
+    } else {
+        qWarning() << "btn_NextPart nicht gefunden – stimmt der ObjectName im .ui?";
+    }
 
     /*
     QComboBox *cbb_Source = this->findChild<QComboBox*>("cbb_Source");
@@ -101,5 +113,28 @@ void NewPartDialog::hookUpSignals() {
             }
         });
     }
+}
+
+void NewPartDialog::resetInputs()
+{
+    // TODO: überlegen welche Felder stehen bleiben können/müssen und diese dann ausnehmen
+
+    // Textfelder leeren
+    for (auto *le : findChildren<QLineEdit*>())    le->clear();
+    for (auto *te : findChildren<QTextEdit*>())    te->clear();
+
+    // Zahlenfelder zurücksetzen
+    for (auto *sb : findChildren<QSpinBox*>())     sb->setValue(0);
+
+    // Vom Dialog gemerkte Pfade/Bilder zurücksetzen
+    this->setProperty("chosenImagePath", QVariant());
+
+    // Bild-Preview zurücksetzen:
+    if (auto *lbl = findChild<QLabel*>("lbl_Image")) {
+        lbl->clear();
+        lbl->setText(tr("IMAGE"));
+        lbl->setAlignment(Qt::AlignCenter);
+    }
+
 }
 

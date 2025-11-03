@@ -12,6 +12,12 @@ public:
     explicit NewPartDialog(JsonPartRepository* repo, QWidget *parent = nullptr);
     ~NewPartDialog();
 
+signals:
+    void nextPartRequested();
+
+public:
+    void resetInputs();
+
 private:    
     Ui::NewPartDialog *ui;
     void hookUpSignals();

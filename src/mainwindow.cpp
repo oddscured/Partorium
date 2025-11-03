@@ -392,7 +392,7 @@ void MainWindow::openListManager() {
 
 void MainWindow::addNewPart() {
     NewPartDialog dlg(m_repo, this);
-    if (dlg.exec() != QDialog::Accepted) return;
+    //if (dlg.exec() != QDialog::Accepted) return;
 
     // --- Repository vorhanden? ---
     if (!m_repo) {
@@ -422,58 +422,80 @@ void MainWindow::addNewPart() {
         return w;
     };
 
-    // --- Felder lesen (null-sicher) ---
-    Part p;
-    if (auto w = getLE("edt_PartName"))                 p.name                 = w->text();
-    if (auto w = getLE("edt_ShortDescription"))         p.shortDescription     = w->text();
-    if (auto w = getCBB("cbb_Category"))                p.category             = w->currentText();
-    if (auto w = getCBB("cbb_SubCategory"))             p.subcategory          = w->currentText();
-    if (auto w = getPTE("txt_Description"))             p.description          = w->toPlainText();
-    if (auto w = getCBB("cbb_Source"))                  p.supplier             = w->currentText();
-    if (auto w = getCBB("cbb_AlternativeSource"))       p.altSupplier          = w->currentText();
-    if (auto w = getCBB("cbb_Manufacturer"))            p.manufacturer         = w->currentText();
-    if (auto w = getCBB("cbb_StorageLocation"))         p.storage              = w->currentText();
-    if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
-    if (auto w = getCBB("cbb_Type"))                    p.type                 = w->currentText();
-    if (auto w = getCBB("cbb_Format"))                  p.format               = w->currentText();
-    if (auto w = getLE("edt_SourceLink"))               p.supplierLink         = w->text();
-    if (auto w = getLE("edt_AlternativeSourceLink"))    p.altSupplierLink      = w->text();
-    if (auto w = getLE("edt_ManufacturerLink"))         p.manufacturerLink     = w->text();
+    // NexPart Feature als Lambda-Funktion
+    auto saveFromDialog = [&]() -> bool
+    {
+        // --- Felder lesen (null-sicher) ---
+        Part p;
+        if (auto w = getLE("edt_PartName"))                 p.name                 = w->text();
+        if (auto w = getLE("edt_ShortDescription"))         p.shortDescription     = w->text();
+        if (auto w = getCBB("cbb_Category"))                p.category             = w->currentText();
+        if (auto w = getCBB("cbb_SubCategory"))             p.subcategory          = w->currentText();
+        if (auto w = getPTE("txt_Description"))             p.description          = w->toPlainText();
+        if (auto w = getCBB("cbb_Source"))                  p.supplier             = w->currentText();
+        if (auto w = getCBB("cbb_AlternativeSource"))       p.altSupplier          = w->currentText();
+        if (auto w = getCBB("cbb_Manufacturer"))            p.manufacturer         = w->currentText();
+        if (auto w = getCBB("cbb_StorageLocation"))         p.storage              = w->currentText();
+        if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
+        if (auto w = getCBB("cbb_Type"))                    p.type                 = w->currentText();
+        if (auto w = getCBB("cbb_Format"))                  p.format               = w->currentText();
+        if (auto w = getLE("edt_SourceLink"))               p.supplierLink         = w->text();
+        if (auto w = getLE("edt_AlternativeSourceLink"))    p.altSupplierLink      = w->text();
+        if (auto w = getLE("edt_ManufacturerLink"))         p.manufacturerLink     = w->text();
 
 
-    if (auto w = getLE("edt_PartFilesFolder")) {
-        const QString folderPath = w->text().trimmed();
-        if (!folderPath.isEmpty()) {
-            QDir d(folderPath);
-            if (d.exists()) p.localFiles << folderPath;
+        if (auto w = getLE("edt_PartFilesFolder")) {
+            const QString folderPath = w->text().trimmed();
+            if (!folderPath.isEmpty()) {
+                QDir d(folderPath);
+                if (d.exists()) p.localFiles << folderPath;
+            }
+        };
+
+        // Bild aus Dialog-Property (wird gesetzt, wenn du die Bildauswahl-Logik ergänzt)
+        const QString chosenImage = dlg.property("chosenImagePath").toString();
+        if (!chosenImage.isEmpty()) p.imagePath = chosenImage;
+
+        if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
+        if (auto w = getLE("edt_Price")) {
+            bool ok = false;
+            p.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
+            if (!ok) p.price = 0.0;
+
+            // Minimalvalidierung
+            if (p.name.trimmed().isEmpty())
+            {
+                QMessageBox::warning(this, tr("Eingabe prüfen"), tr("Bitte einen Namen eingeben."));
+                return false;
+            }
         }
+
+        // --- Speichern ---
+        const int newId = m_repo->addPart(p);
+
+        // UI aktualisieren
+        refillCategories();
+        applyFilters();
+        selectPartById(newId);
+        return true;
     };
 
-    // Bild aus Dialog-Property (wird gesetzt, wenn du die Bildauswahl-Logik ergänzt)
-    const QString chosenImage = dlg.property("chosenImagePath").toString();
-    if (!chosenImage.isEmpty()) p.imagePath = chosenImage;
-
-    if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
-    if (auto w = getLE("edt_Price")) {
-        bool ok = false;
-        p.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
-        if (!ok) p.price = 0.0;
-
-        // Minimalvalidierung
-        if (p.name.trimmed().isEmpty())
-        {
-            QMessageBox::warning(this, tr("Eingabe prüfen"), tr("Bitte einen Namen eingeben."));
-            return;
+    // --- NEU: Reaktion auf „Nächstes Teil“ ---
+    connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
+        if (saveFromDialog()) {
+            // Für nächsten Eintrag leeren, Dialog bleibt offen
+            dlg.resetInputs();
+            // Fokus wieder auf den Namen setzen
+            if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName")) w->setFocus();
+            qDebug() << "next Part requested";
         }
+    });
+
+    // --- Wie bisher: OK/Abbrechen modal behandeln ---
+    if (dlg.exec() == QDialog::Accepted) {
+        // Nur wenn OK gedrückt wurde, einmal speichern und schließen:
+        saveFromDialog();
     }
-
-    // --- Speichern ---
-    const int newId = m_repo->addPart(p);
-
-    // UI aktualisieren
-    refillCategories();
-    applyFilters();
-    selectPartById(newId);
 }
 
 void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {

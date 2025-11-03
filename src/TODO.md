@@ -17,6 +17,8 @@
 
 ## Improvements
 
+[ ] Add input validation (name!) to newPartsDialog
+
 [ ] Automatic backup of .json file
 
 [ ] validation of .json file before loading
@@ -26,6 +28,12 @@
 [x] add filetype icons in parts folder view (lst_Files)
 
 [ ] create separate dialog to create categories
+
+[ ] show message when part name already exists
+
+[ ] add tooltips to UI elements
+
+[ ] add menu to delete items permanently (with request-dialog)
 
 ##
 
