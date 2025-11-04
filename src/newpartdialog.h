@@ -24,6 +24,7 @@ private:
     void prepareUI();
     JsonPartRepository* m_repo = nullptr;  // ← neu: hier merken wir uns das Repo
     void populatePresetCombos();
+    bool initializeAfterAddEnabled() const;
 
 };
 

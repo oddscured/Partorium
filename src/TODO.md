@@ -13,11 +13,16 @@
 
 [ ] fix "QPixmap::scaled: Pixmap is a null pixmap"
 
+[ ] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
+
+
 ##
 
 ## Improvements
 
 [ ] Add input validation (name!) to newPartsDialog
+
+[ ] Add "next part" button to newpartdialog for fast entering of parts 
 
 [ ] Automatic backup of .json file
 

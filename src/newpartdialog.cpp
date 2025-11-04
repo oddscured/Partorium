@@ -28,7 +28,7 @@ void NewPartDialog::prepareUI()
 
 void NewPartDialog::hookUpSignals() {
     // Einstellungen laden
-    QSettings s("Partorium","Partorium");
+    QSettings s; //("Partorium","Partorium");
     const QString defaultImageFolder = s.value("defaultImageFolder").toString();
     const QString defaultPartsFilesFolder = s.value("defaultPartsFilesFolder").toString();
 
@@ -56,26 +56,6 @@ void NewPartDialog::hookUpSignals() {
     } else {
         qWarning() << "btn_NextPart nicht gefunden – stimmt der ObjectName im .ui?";
     }
-
-    /*
-    QComboBox *cbb_Source = this->findChild<QComboBox*>("cbb_Source");
-    cbb_Source->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"});
-    QComboBox *cbb_AltSource = this->findChild<QComboBox*>("cbb_AlternativeSource");
-    cbb_AltSource->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"}); //TODO: remove redundancy
-    QComboBox *cbb_Manufacturer = this->findChild<QComboBox*>("cbb_Manufacturer");
-    cbb_Manufacturer->addItems({"", "ELV"});
-    QComboBox *cbb_Category = this->findChild<QComboBox*>("cbb_Category");
-    cbb_Category->addItems({"", "Sensoren", "Aktoren", "Module", "Kabel & Stecker", "Sonstiges"});
-    QComboBox *cbb_SubCategory = this->findChild<QComboBox*>("cbb_SubCategory");
-    cbb_SubCategory->addItems({"", "Temperatursensoren", "Feuchtigkeitssensoren", "Bewegungssensoren", "Displays", "Motoren", "Relais", "Breadboards", "Jumper Kabel"});
-    QComboBox *cbb_Storage = this->findChild<QComboBox*>("cbb_StorageLocation");
-    cbb_Storage->addItems({"", "Schublade A1", "Schublade A2", "Box 1", "Box 2"});
-    QComboBox *cbb_Format = this->findChild<QComboBox*>("cbb_Format");
-    cbb_Format->addItems({"", "SMD", "DIP", "Sonstiges"});
-    QComboBox *cbb_Type = this->findChild<QComboBox*>("cbb_Type");
-    cbb_Type->addItems({"", "Widerstand", "Kondensator", "Transistor", "IC", "Sonstiges"});
-*/
-
 
     // UI Elemente suchen und zuordnen
     auto btnFolder = this->findChild<QPushButton*>("btn_SelectPartFilesFolder");
@@ -115,9 +95,22 @@ void NewPartDialog::hookUpSignals() {
     }
 }
 
+// Abfragen, ob Felder initialisiert werden sollen nach Hinzufügen eines neuen Bauteils
+bool NewPartDialog::initializeAfterAddEnabled() const {
+    //return QSettings("Partorium","Partorium")
+    return QSettings()
+    .value("ui/initializeNewPartFields", true).toBool();
+}
+
 void NewPartDialog::resetInputs()
 {
     // TODO: überlegen welche Felder stehen bleiben können/müssen und diese dann ausnehmen
+
+    // Immer das Namensfeld leeren
+    ui->edt_PartName->clear();
+
+    // Wenn Option deaktiviert ist, nichts tun
+    if(!initializeAfterAddEnabled()) return;
 
     // Textfelder leeren
     for (auto *le : findChildren<QLineEdit*>())    le->clear();

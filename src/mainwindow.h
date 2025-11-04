@@ -21,7 +21,8 @@ private:
     Ui::MainWindow *ui;
     JsonPartRepository* m_repo = nullptr;
     QStandardItemModel* m_imagesModel = nullptr;
-    bool m_showDeletedParts = false;    // neue Option
+    bool m_showDeletedParts = false;
+    bool m_InitializeNewPartFileds = false;
 
 
     //void buildMenus();
@@ -38,10 +39,10 @@ private:
     void on_act_ManagePresets_triggered();
     // Neue Option zum Löschen und Ändern
 
-
 private slots:
     void onFileActivated(QListWidgetItem* item);
     void addNewPart();
+
 
     // Neue Option zum Löschen und Ändern
     void onPartsContextMenuRequested(const QPoint& pos);
@@ -49,6 +50,7 @@ private slots:
     void deletePart(int id);
     void deletePartFinal(int id);
     void toggleShowDeletedParts(bool checked);
+    void toggleFieldReset(bool checked);
     void restorePart(int id);
 };
 

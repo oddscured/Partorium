@@ -456,7 +456,7 @@
      <x>0</x>
      <y>0</y>
      <width>1079</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
@@ -485,6 +485,7 @@
      <string>Ansicht</string>
     </property>
     <addaction name="act_ShowDeletedParts"/>
+    <addaction name="act_InitializeNewPartFields"/>
    </widget>
    <addaction name="menuDatei"/>
    <addaction name="menuWerkzeuge"/>
@@ -532,6 +533,14 @@
   <action name="act_ListManager">
    <property name="text">
     <string>Listen verwalten</string>
+   </property>
+  </action>
+  <action name="act_InitializeNewPartFields">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Felder bei neuem Bauteil initialisieren</string>
    </property>
   </action>
  </widget>

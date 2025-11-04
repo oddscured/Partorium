@@ -25,9 +25,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Settings laden
-    QSettings s;
+    QSettings s;//("Partorium","Partorium");
     m_showDeletedParts = s.value("ui/showDeletedParts", false).toBool();
     ui->act_ShowDeletedParts->setChecked(m_showDeletedParts); // Option setzen wie in den Einstellungen geladen
+    m_InitializeNewPartFileds = s.value("ui/initializeNewPartFields", false).toBool();
+    ui->act_InitializeNewPartFields->setChecked(m_InitializeNewPartFileds);
+
+    //const bool init = s.value("ui/initializeNewPartFields", false).toBool();
+    //ui->act_InitializeNewPartFields->setChecked(init);
 
 
     // Repository initialisieren: Pfad aus Settings oder Vorschlag (iCloud)
@@ -42,8 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Menüs/Aktionen
     // Anzeige gelöschter Teile umschalten
-    ui->act_ShowDeletedParts->setChecked(m_showDeletedParts);
-    connect(ui->act_ShowDeletedParts, &QAction::toggled, this, &MainWindow::toggleShowDeletedParts);
+    //ui->act_ShowDeletedParts->setChecked(m_showDeletedParts);
+   connect(ui->act_ShowDeletedParts, &QAction::toggled, this, &MainWindow::toggleShowDeletedParts);
 
     // Kontektmenü für das Parts-List Widget
     ui->lst_Parts->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -57,12 +62,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_ListManager, &QAction::triggered, this, &MainWindow::openListManager);
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
-    connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,
-            [this](QListWidgetItem* cur, QListWidgetItem*) {
-                if (!cur) return;
-                const int id = cur->data(Qt::UserRole).toInt();
-                if (auto p = m_repo->getPart(id)) showPart(*p);
-            });
+    connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
+
+    // Für das Menü "Ansicht"
+    connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings().setValue("ui/initializeNewPartFields", checked);});
 
     // Kategorien aus Daten ableiten
     refillCategories();
@@ -480,7 +483,7 @@ void MainWindow::addNewPart() {
         return true;
     };
 
-    // --- NEU: Reaktion auf „Nächstes Teil“ ---
+    // Reaktion auf „Nächstes Teil“ ---
     connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
         if (saveFromDialog()) {
             // Für nächsten Eintrag leeren, Dialog bleibt offen
@@ -694,6 +697,12 @@ void MainWindow::toggleShowDeletedParts(bool checked) {
     QSettings s;
     s.setValue("ui/showDeletedParts", m_showDeletedParts);
     applyFilters();
+}
+
+void MainWindow::toggleFieldReset(bool checked) {
+    m_InitializeNewPartFileds = checked;
+    QSettings s;
+    s.setValue("ui/initializeNewPartFields", m_InitializeNewPartFileds);
 }
 
 // Wiederherstellen-Action
