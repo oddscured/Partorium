@@ -47,6 +47,7 @@ private slots:
     void onPartsContextMenuRequested(const QPoint& pos);
     void editPart(int id);
     void deletePart(int id);
+    void deletePartFinal(int id);
     void toggleShowDeletedParts(bool checked);
     void restorePart(int id);
 };

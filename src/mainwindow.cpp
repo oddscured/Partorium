@@ -510,11 +510,13 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
     QMenu m(this);
     QAction* actEdit = nullptr;
     QAction* actDelete = nullptr;
+    QAction* actDeleteFinal = nullptr;
     QAction* actRestore = nullptr;
 
     if (p.deleted) {
         // Nur für gelöschte den Punkt "Wiederherstellen" anbieten
         actRestore = m.addAction(tr("Wiederherstellen"));
+        actDeleteFinal = m.addAction(tr("Endgültig löschen"));
 
         // Optional: zur Orientierung anzeigen, aber deaktivieren
         m.addSeparator();
@@ -532,6 +534,7 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
     if (chosen == actEdit)        editPart(id);
     else if (chosen == actDelete) deletePart(id);
     else if (chosen == actRestore) restorePart(id);
+    else if (chosen == actDeleteFinal) deletePartFinal(id);
 }
 
 void MainWindow::deletePart(int id) {
@@ -544,9 +547,34 @@ void MainWindow::deletePart(int id) {
             QMessageBox::warning(this, tr("Fehler"), tr("Eintrag konnte nicht gelöscht werden."));
             return;
         }
+
         refillCategories();
         applyFilters();
     }
+}
+
+void MainWindow::deletePartFinal(int id) {
+
+    if (!m_repo) return;
+
+    // Sicherheitsabfrage
+    auto btn = QMessageBox::warning(
+        this,
+        tr("Endgültig löschen"),
+        tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n"
+           "Dieser Vorgang kann nicht rückgängig gemacht werden.\n\n"
+           "Möchtest du fortfahren?"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+        );
+    if (btn != QMessageBox::Yes) return;
+
+    // Bauteil wirklich löschen
+    m_repo->removePart(id);
+
+    // UI aktualisieren
+    refillCategories();
+    applyFilters();
 }
 
 void MainWindow::editPart(int id) {
