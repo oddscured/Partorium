@@ -713,8 +713,10 @@ void MainWindow::restorePart(int id) {
     }
 }
 
+/*
 // Beispiel: Menü-Action „Vorgabelisten…“
 void MainWindow::on_act_ManagePresets_triggered()
 {
 
 }
+*/

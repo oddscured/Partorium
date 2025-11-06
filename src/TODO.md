@@ -15,6 +15,7 @@
 
 [ ] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
 
+[ ] fix tab order in newpartdialog
 
 ##
 
