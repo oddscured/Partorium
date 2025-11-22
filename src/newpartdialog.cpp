@@ -1,6 +1,6 @@
 #include "newpartdialog.h"
 #include "ui_newpartdialog.h"
-#include "listmanagerdialog.h"
+//#include "listmanagerdialog.h"
 #include "jsonpartrepository.h"
 #include <QFileDialog>
 #include <QLabel>
@@ -16,7 +16,7 @@ NewPartDialog::NewPartDialog(JsonPartRepository* repo, QWidget *parent)
     ui->setupUi(this);
     hookUpSignals();
 
-
+    //connect(ui->btn_NextPart, &QPushButton::clicked, this, &NewPartDialog::nextPartRequested);
 }
 
 NewPartDialog::~NewPartDialog() { delete ui; }
@@ -28,7 +28,7 @@ void NewPartDialog::prepareUI()
 
 void NewPartDialog::hookUpSignals() {
     // Einstellungen laden
-    QSettings s("Partorium","Partorium");
+    QSettings s; //("Partorium","Partorium");
     const QString defaultImageFolder = s.value("defaultImageFolder").toString();
     const QString defaultPartsFilesFolder = s.value("defaultPartsFilesFolder").toString();
 
@@ -44,26 +44,18 @@ void NewPartDialog::hookUpSignals() {
     GuiUtils::applyPresetToCombo(ui->cbb_Type, presets, "Typ");
     GuiUtils::applyPresetToCombo(ui->cbb_AlternativeSource, presets, "Bezugsquelle");
 
-
-    /*
-    QComboBox *cbb_Source = this->findChild<QComboBox*>("cbb_Source");
-    cbb_Source->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"});
-    QComboBox *cbb_AltSource = this->findChild<QComboBox*>("cbb_AlternativeSource");
-    cbb_AltSource->addItems({"", "AZ-Delivery", "Amazon", "Ali Express", "Reichelt", "Conrad"}); //TODO: remove redundancy
-    QComboBox *cbb_Manufacturer = this->findChild<QComboBox*>("cbb_Manufacturer");
-    cbb_Manufacturer->addItems({"", "ELV"});
-    QComboBox *cbb_Category = this->findChild<QComboBox*>("cbb_Category");
-    cbb_Category->addItems({"", "Sensoren", "Aktoren", "Module", "Kabel & Stecker", "Sonstiges"});
-    QComboBox *cbb_SubCategory = this->findChild<QComboBox*>("cbb_SubCategory");
-    cbb_SubCategory->addItems({"", "Temperatursensoren", "Feuchtigkeitssensoren", "Bewegungssensoren", "Displays", "Motoren", "Relais", "Breadboards", "Jumper Kabel"});
-    QComboBox *cbb_Storage = this->findChild<QComboBox*>("cbb_StorageLocation");
-    cbb_Storage->addItems({"", "Schublade A1", "Schublade A2", "Box 1", "Box 2"});
-    QComboBox *cbb_Format = this->findChild<QComboBox*>("cbb_Format");
-    cbb_Format->addItems({"", "SMD", "DIP", "Sonstiges"});
-    QComboBox *cbb_Type = this->findChild<QComboBox*>("cbb_Type");
-    cbb_Type->addItems({"", "Widerstand", "Kondensator", "Transistor", "IC", "Sonstiges"});
-*/
-
+    // NextPart button aus der UI nehmen
+    if (auto nextBtn = this->findChild<QPushButton*>("btn_NextPart")) {
+        nextBtn->setAutoDefault(false); // Enter soll weiter OK drücken
+        nextBtn->setDefault(false);
+        connect(nextBtn, &QPushButton::clicked, this, [this](){
+            // Zum Debuggen:
+            qDebug() << "btn_NextPart clicked -> emit nextPartRequested()";
+            emit nextPartRequested();
+        });
+    } else {
+        qWarning() << "btn_NextPart nicht gefunden – stimmt der ObjectName im .ui?";
+    }
 
     // UI Elemente suchen und zuordnen
     auto btnFolder = this->findChild<QPushButton*>("btn_SelectPartFilesFolder");
@@ -101,5 +93,41 @@ void NewPartDialog::hookUpSignals() {
             }
         });
     }
+}
+
+// Abfragen, ob Felder initialisiert werden sollen nach Hinzufügen eines neuen Bauteils
+bool NewPartDialog::initializeAfterAddEnabled() const {
+    //return QSettings("Partorium","Partorium")
+    return QSettings()
+    .value("ui/initializeNewPartFields", true).toBool();
+}
+
+void NewPartDialog::resetInputs()
+{
+    // TODO: überlegen welche Felder stehen bleiben können/müssen und diese dann ausnehmen
+
+    // Immer das Namensfeld leeren
+    ui->edt_PartName->clear();
+
+    // Wenn Option deaktiviert ist, nichts tun
+    if(!initializeAfterAddEnabled()) return;
+
+    // Textfelder leeren
+    for (auto *le : findChildren<QLineEdit*>())    le->clear();
+    for (auto *te : findChildren<QTextEdit*>())    te->clear();
+
+    // Zahlenfelder zurücksetzen
+    for (auto *sb : findChildren<QSpinBox*>())     sb->setValue(0);
+
+    // Vom Dialog gemerkte Pfade/Bilder zurücksetzen
+    this->setProperty("chosenImagePath", QVariant());
+
+    // Bild-Preview zurücksetzen:
+    if (auto *lbl = findChild<QLabel*>("lbl_Image")) {
+        lbl->clear();
+        lbl->setText(tr("IMAGE"));
+        lbl->setAlignment(Qt::AlignCenter);
+    }
+
 }
 

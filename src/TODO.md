@@ -13,9 +13,17 @@
 
 [ ] fix "QPixmap::scaled: Pixmap is a null pixmap"
 
+[ ] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
+
+[ ] fix tab order in newpartdialog
+
 ##
 
 ## Improvements
+
+[ ] Add input validation (name!) to newPartsDialog
+
+[ ] Add "next part" button to newpartdialog for fast entering of parts 
 
 [ ] Automatic backup of .json file
 
@@ -26,6 +34,12 @@
 [x] add filetype icons in parts folder view (lst_Files)
 
 [ ] create separate dialog to create categories
+
+[ ] show message when part name already exists
+
+[ ] add tooltips to UI elements
+
+[ ] add menu to delete items permanently (with request-dialog)
 
 ##
 

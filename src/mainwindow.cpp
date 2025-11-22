@@ -25,9 +25,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Settings laden
-    QSettings s;
+    QSettings s;//("Partorium","Partorium");
     m_showDeletedParts = s.value("ui/showDeletedParts", false).toBool();
     ui->act_ShowDeletedParts->setChecked(m_showDeletedParts); // Option setzen wie in den Einstellungen geladen
+    m_InitializeNewPartFileds = s.value("ui/initializeNewPartFields", false).toBool();
+    ui->act_InitializeNewPartFields->setChecked(m_InitializeNewPartFileds);
+
+    //const bool init = s.value("ui/initializeNewPartFields", false).toBool();
+    //ui->act_InitializeNewPartFields->setChecked(init);
 
 
     // Repository initialisieren: Pfad aus Settings oder Vorschlag (iCloud)
@@ -42,8 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Menüs/Aktionen
     // Anzeige gelöschter Teile umschalten
-    ui->act_ShowDeletedParts->setChecked(m_showDeletedParts);
-    connect(ui->act_ShowDeletedParts, &QAction::toggled, this, &MainWindow::toggleShowDeletedParts);
+    //ui->act_ShowDeletedParts->setChecked(m_showDeletedParts);
+   connect(ui->act_ShowDeletedParts, &QAction::toggled, this, &MainWindow::toggleShowDeletedParts);
 
     // Kontektmenü für das Parts-List Widget
     ui->lst_Parts->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -57,12 +62,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_ListManager, &QAction::triggered, this, &MainWindow::openListManager);
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
-    connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,
-            [this](QListWidgetItem* cur, QListWidgetItem*) {
-                if (!cur) return;
-                const int id = cur->data(Qt::UserRole).toInt();
-                if (auto p = m_repo->getPart(id)) showPart(*p);
-            });
+    connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
+
+    // Für das Menü "Ansicht"
+    connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings().setValue("ui/initializeNewPartFields", checked);});
 
     // Kategorien aus Daten ableiten
     refillCategories();
@@ -392,7 +395,7 @@ void MainWindow::openListManager() {
 
 void MainWindow::addNewPart() {
     NewPartDialog dlg(m_repo, this);
-    if (dlg.exec() != QDialog::Accepted) return;
+    //if (dlg.exec() != QDialog::Accepted) return;
 
     // --- Repository vorhanden? ---
     if (!m_repo) {
@@ -422,58 +425,80 @@ void MainWindow::addNewPart() {
         return w;
     };
 
-    // --- Felder lesen (null-sicher) ---
-    Part p;
-    if (auto w = getLE("edt_PartName"))                 p.name                 = w->text();
-    if (auto w = getLE("edt_ShortDescription"))         p.shortDescription     = w->text();
-    if (auto w = getCBB("cbb_Category"))                p.category             = w->currentText();
-    if (auto w = getCBB("cbb_SubCategory"))             p.subcategory          = w->currentText();
-    if (auto w = getPTE("txt_Description"))             p.description          = w->toPlainText();
-    if (auto w = getCBB("cbb_Source"))                  p.supplier             = w->currentText();
-    if (auto w = getCBB("cbb_AlternativeSource"))       p.altSupplier          = w->currentText();
-    if (auto w = getCBB("cbb_Manufacturer"))            p.manufacturer         = w->currentText();
-    if (auto w = getCBB("cbb_StorageLocation"))         p.storage              = w->currentText();
-    if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
-    if (auto w = getCBB("cbb_Type"))                    p.type                 = w->currentText();
-    if (auto w = getCBB("cbb_Format"))                  p.format               = w->currentText();
-    if (auto w = getLE("edt_SourceLink"))               p.supplierLink         = w->text();
-    if (auto w = getLE("edt_AlternativeSourceLink"))    p.altSupplierLink      = w->text();
-    if (auto w = getLE("edt_ManufacturerLink"))         p.manufacturerLink     = w->text();
+    // NexPart Feature als Lambda-Funktion
+    auto saveFromDialog = [&]() -> bool
+    {
+        // --- Felder lesen (null-sicher) ---
+        Part p;
+        if (auto w = getLE("edt_PartName"))                 p.name                 = w->text();
+        if (auto w = getLE("edt_ShortDescription"))         p.shortDescription     = w->text();
+        if (auto w = getCBB("cbb_Category"))                p.category             = w->currentText();
+        if (auto w = getCBB("cbb_SubCategory"))             p.subcategory          = w->currentText();
+        if (auto w = getPTE("txt_Description"))             p.description          = w->toPlainText();
+        if (auto w = getCBB("cbb_Source"))                  p.supplier             = w->currentText();
+        if (auto w = getCBB("cbb_AlternativeSource"))       p.altSupplier          = w->currentText();
+        if (auto w = getCBB("cbb_Manufacturer"))            p.manufacturer         = w->currentText();
+        if (auto w = getCBB("cbb_StorageLocation"))         p.storage              = w->currentText();
+        if (auto w = getLE("edt_StorageLocationDetails"))   p.storageDetails       = w->text();
+        if (auto w = getCBB("cbb_Type"))                    p.type                 = w->currentText();
+        if (auto w = getCBB("cbb_Format"))                  p.format               = w->currentText();
+        if (auto w = getLE("edt_SourceLink"))               p.supplierLink         = w->text();
+        if (auto w = getLE("edt_AlternativeSourceLink"))    p.altSupplierLink      = w->text();
+        if (auto w = getLE("edt_ManufacturerLink"))         p.manufacturerLink     = w->text();
 
 
-    if (auto w = getLE("edt_PartFilesFolder")) {
-        const QString folderPath = w->text().trimmed();
-        if (!folderPath.isEmpty()) {
-            QDir d(folderPath);
-            if (d.exists()) p.localFiles << folderPath;
+        if (auto w = getLE("edt_PartFilesFolder")) {
+            const QString folderPath = w->text().trimmed();
+            if (!folderPath.isEmpty()) {
+                QDir d(folderPath);
+                if (d.exists()) p.localFiles << folderPath;
+            }
+        };
+
+        // Bild aus Dialog-Property (wird gesetzt, wenn du die Bildauswahl-Logik ergänzt)
+        const QString chosenImage = dlg.property("chosenImagePath").toString();
+        if (!chosenImage.isEmpty()) p.imagePath = chosenImage;
+
+        if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
+        if (auto w = getLE("edt_Price")) {
+            bool ok = false;
+            p.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
+            if (!ok) p.price = 0.0;
+
+            // Minimalvalidierung
+            if (p.name.trimmed().isEmpty())
+            {
+                QMessageBox::warning(this, tr("Eingabe prüfen"), tr("Bitte einen Namen eingeben."));
+                return false;
+            }
         }
+
+        // --- Speichern ---
+        const int newId = m_repo->addPart(p);
+
+        // UI aktualisieren
+        refillCategories();
+        applyFilters();
+        selectPartById(newId);
+        return true;
     };
 
-    // Bild aus Dialog-Property (wird gesetzt, wenn du die Bildauswahl-Logik ergänzt)
-    const QString chosenImage = dlg.property("chosenImagePath").toString();
-    if (!chosenImage.isEmpty()) p.imagePath = chosenImage;
-
-    if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
-    if (auto w = getLE("edt_Price")) {
-        bool ok = false;
-        p.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
-        if (!ok) p.price = 0.0;
-
-        // Minimalvalidierung
-        if (p.name.trimmed().isEmpty())
-        {
-            QMessageBox::warning(this, tr("Eingabe prüfen"), tr("Bitte einen Namen eingeben."));
-            return;
+    // Reaktion auf „Nächstes Teil“ ---
+    connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
+        if (saveFromDialog()) {
+            // Für nächsten Eintrag leeren, Dialog bleibt offen
+            dlg.resetInputs();
+            // Fokus wieder auf den Namen setzen
+            if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName")) w->setFocus();
+            qDebug() << "next Part requested";
         }
+    });
+
+    // --- Wie bisher: OK/Abbrechen modal behandeln ---
+    if (dlg.exec() == QDialog::Accepted) {
+        // Nur wenn OK gedrückt wurde, einmal speichern und schließen:
+        saveFromDialog();
     }
-
-    // --- Speichern ---
-    const int newId = m_repo->addPart(p);
-
-    // UI aktualisieren
-    refillCategories();
-    applyFilters();
-    selectPartById(newId);
 }
 
 void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
@@ -488,11 +513,13 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
     QMenu m(this);
     QAction* actEdit = nullptr;
     QAction* actDelete = nullptr;
+    QAction* actDeleteFinal = nullptr;
     QAction* actRestore = nullptr;
 
     if (p.deleted) {
         // Nur für gelöschte den Punkt "Wiederherstellen" anbieten
         actRestore = m.addAction(tr("Wiederherstellen"));
+        actDeleteFinal = m.addAction(tr("Endgültig löschen"));
 
         // Optional: zur Orientierung anzeigen, aber deaktivieren
         m.addSeparator();
@@ -510,6 +537,7 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
     if (chosen == actEdit)        editPart(id);
     else if (chosen == actDelete) deletePart(id);
     else if (chosen == actRestore) restorePart(id);
+    else if (chosen == actDeleteFinal) deletePartFinal(id);
 }
 
 void MainWindow::deletePart(int id) {
@@ -522,9 +550,34 @@ void MainWindow::deletePart(int id) {
             QMessageBox::warning(this, tr("Fehler"), tr("Eintrag konnte nicht gelöscht werden."));
             return;
         }
+
         refillCategories();
         applyFilters();
     }
+}
+
+void MainWindow::deletePartFinal(int id) {
+
+    if (!m_repo) return;
+
+    // Sicherheitsabfrage
+    auto btn = QMessageBox::warning(
+        this,
+        tr("Endgültig löschen"),
+        tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n"
+           "Dieser Vorgang kann nicht rückgängig gemacht werden.\n\n"
+           "Möchtest du fortfahren?"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+        );
+    if (btn != QMessageBox::Yes) return;
+
+    // Bauteil wirklich löschen
+    m_repo->removePart(id);
+
+    // UI aktualisieren
+    refillCategories();
+    applyFilters();
 }
 
 void MainWindow::editPart(int id) {
@@ -646,6 +699,12 @@ void MainWindow::toggleShowDeletedParts(bool checked) {
     applyFilters();
 }
 
+void MainWindow::toggleFieldReset(bool checked) {
+    m_InitializeNewPartFileds = checked;
+    QSettings s;
+    s.setValue("ui/initializeNewPartFields", m_InitializeNewPartFileds);
+}
+
 // Wiederherstellen-Action
 void MainWindow::restorePart(int id) {
     if (auto p = m_repo->getPart(id)) {
@@ -654,8 +713,10 @@ void MainWindow::restorePart(int id) {
     }
 }
 
+/*
 // Beispiel: Menü-Action „Vorgabelisten…“
 void MainWindow::on_act_ManagePresets_triggered()
 {
 
 }
+*/

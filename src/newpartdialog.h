@@ -12,12 +12,19 @@ public:
     explicit NewPartDialog(JsonPartRepository* repo, QWidget *parent = nullptr);
     ~NewPartDialog();
 
+signals:
+    void nextPartRequested();
+
+public:
+    void resetInputs();
+
 private:    
     Ui::NewPartDialog *ui;
     void hookUpSignals();
     void prepareUI();
     JsonPartRepository* m_repo = nullptr;  // ← neu: hier merken wir uns das Repo
     void populatePresetCombos();
+    bool initializeAfterAddEnabled() const;
 
 };
 
