@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include "guiutils.h"
+#include <QMessageBox>
 
 NewPartDialog::NewPartDialog(JsonPartRepository* repo, QWidget *parent)
     : QDialog(parent)
@@ -17,6 +18,7 @@ NewPartDialog::NewPartDialog(JsonPartRepository* repo, QWidget *parent)
     hookUpSignals();
 
     //connect(ui->btn_NextPart, &QPushButton::clicked, this, &NewPartDialog::nextPartRequested);
+
 }
 
 NewPartDialog::~NewPartDialog() { delete ui; }
@@ -28,7 +30,8 @@ void NewPartDialog::prepareUI()
 
 void NewPartDialog::hookUpSignals() {
     // Einstellungen laden
-    QSettings s; //("Partorium","Partorium");
+    //QSettings s; //("Partorium","Partorium");
+    QSettings s("Partorium","Partorium");
     const QString defaultImageFolder = s.value("defaultImageFolder").toString();
     const QString defaultPartsFilesFolder = s.value("defaultPartsFilesFolder").toString();
 
@@ -44,6 +47,13 @@ void NewPartDialog::hookUpSignals() {
     GuiUtils::applyPresetToCombo(ui->cbb_Type, presets, "Typ");
     GuiUtils::applyPresetToCombo(ui->cbb_AlternativeSource, presets, "Bezugsquelle");
 
+
+    connect(ui->btn_NextPart, &QPushButton::clicked, this, [this]{
+        qDebug() << "btn_NextPart clicked in dialog" << this;
+        emit nextPartRequested();
+        qDebug() << "nextPartRequested emitted" << this;
+    });
+
     // NextPart button aus der UI nehmen
     if (auto nextBtn = this->findChild<QPushButton*>("btn_NextPart")) {
         nextBtn->setAutoDefault(false); // Enter soll weiter OK drücken
@@ -56,6 +66,21 @@ void NewPartDialog::hookUpSignals() {
     } else {
         qWarning() << "btn_NextPart nicht gefunden – stimmt der ObjectName im .ui?";
     }
+
+
+    // Buttons
+    connect(ui->btn_Ok, &QPushButton::clicked, this, [this]{
+        // TODO: hier ggf. validieren/speichern
+        if(ui->edt_PartName->text() == "")
+        {
+            QMessageBox::critical(this, "Fehler", "Es muss mindestens ein Bauteilname vergeben werden!");
+            return;
+        }
+        this->accept();
+    });
+    // Abbrechen -> Dialog verwerfen
+    connect(ui->btn_Cancel, &QPushButton::clicked, this, &QDialog::reject);
+
 
     // UI Elemente suchen und zuordnen
     auto btnFolder = this->findChild<QPushButton*>("btn_SelectPartFilesFolder");

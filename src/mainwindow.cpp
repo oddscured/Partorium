@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Settings laden
-    QSettings s;//("Partorium","Partorium");
+    QSettings s("Partorium","Partorium");
     m_showDeletedParts = s.value("ui/showDeletedParts", false).toBool();
     ui->act_ShowDeletedParts->setChecked(m_showDeletedParts); // Option setzen wie in den Einstellungen geladen
     m_InitializeNewPartFileds = s.value("ui/initializeNewPartFields", false).toBool();
@@ -63,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
     connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
+
 
     // Für das Menü "Ansicht"
     connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings().setValue("ui/initializeNewPartFields", checked);});
@@ -395,7 +396,6 @@ void MainWindow::openListManager() {
 
 void MainWindow::addNewPart() {
     NewPartDialog dlg(m_repo, this);
-    //if (dlg.exec() != QDialog::Accepted) return;
 
     // --- Repository vorhanden? ---
     if (!m_repo) {
@@ -487,6 +487,7 @@ void MainWindow::addNewPart() {
     connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
         if (saveFromDialog()) {
             // Für nächsten Eintrag leeren, Dialog bleibt offen
+            qDebug() << "saveFromDialog";
             dlg.resetInputs();
             // Fokus wieder auf den Namen setzen
             if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName")) w->setFocus();
@@ -690,6 +691,17 @@ void MainWindow::editPart(int id) {
     refillCategories();
     applyFilters();
     selectPartById(p.id);
+
+    connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
+        if (true) {
+            // Für nächsten Eintrag leeren, Dialog bleibt offen
+            qDebug() << "saveFromDialog";
+            dlg.resetInputs();
+            // Fokus wieder auf den Namen setzen
+            if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName")) w->setFocus();
+            qDebug() << "next Part requested";
+        }
+    });
 }
 
 void MainWindow::toggleShowDeletedParts(bool checked) {

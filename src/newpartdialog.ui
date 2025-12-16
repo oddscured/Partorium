@@ -654,7 +654,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
-     <widget class="QCheckBox" name="checkBox">
+     <widget class="QCheckBox" name="chb_ClearFields">
       <property name="text">
        <string>Feldinhalte zurücksetzen</string>
       </property>

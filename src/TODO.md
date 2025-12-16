@@ -41,6 +41,8 @@
 
 [ ] add menu to delete items permanently (with request-dialog)
 
+[ ] change tab order for newPartsDialog
+
 ##
 
 ## Changes

@@ -14,6 +14,7 @@ public:
 
 signals:
     void nextPartRequested();
+    void requestSaveAndContinue(bool clearAll); //Mainwindow soll speichern, Dialog soll aber offen bleiben
 
 public:
     void resetInputs();
