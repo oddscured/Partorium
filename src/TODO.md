@@ -4,6 +4,8 @@
 [ ] add language selection to settings symbol and/or main menu bar 
 
 [ ] show additional images when clicking on main part image
+
+[ ] use new search textbox: https://doc.qt.io/qt-6/qml-qtquick-controls-searchfield.html?utm_source=installer&utm_medium=banner&utm_campaign=installer4Qt610
 ##
 
 
