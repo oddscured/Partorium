@@ -23,6 +23,8 @@
 
 ## Improvements
 
+[ ] Add icons from here: https://fonts.google.com/icons
+
 [ ] Add input validation (name!) to newPartsDialog
 
 [ ] Add "next part" button to newpartdialog for fast entering of parts 

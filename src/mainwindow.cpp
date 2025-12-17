@@ -17,6 +17,7 @@
 #include "guiutils.h"
 #include <QFileIconProvider>
 #include <QMimeDatabase>
+#include <QPushButton>
 #include "listmanagerdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -491,7 +492,7 @@ void MainWindow::addNewPart() {
             dlg.resetInputs();
             // Fokus wieder auf den Namen setzen
             if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName")) w->setFocus();
-            qDebug() << "next Part requested";
+            qDebug() << "next Part requested - NewPart";
         }
     });
 
@@ -591,6 +592,21 @@ void MainWindow::editPart(int id) {
     NewPartDialog dlg(m_repo, this);
     dlg.setWindowTitle(tr("Bauteil bearbeiten"));
 
+    // connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
+    //     if (true) {
+    //         // Für nächsten Eintrag leeren, Dialog bleibt offen
+    //         //dlg.resetInputs();
+    //         // Fokus wieder auf den Namen setzen
+    //         if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName"))
+    //         {
+    //             w->setFocus();
+    //             w->setText("");
+    //         }
+    //         qDebug() << "next Part requested - EditPart";
+    //     }
+    // });
+
+
     auto setLE = [&](const char* name, const QString& v){
         if (auto w = dlg.findChild<QLineEdit*>(name)) w->setText(v);
     };
@@ -638,70 +654,113 @@ void MainWindow::editPart(int id) {
         }
     }
 
-    if (dlg.exec() != QDialog::Accepted) return;
 
-    // Werte zurücklesen (gleiches Muster wie in addNewPart)
-    auto getLE = [&](const char* name) -> QLineEdit* { return dlg.findChild<QLineEdit*>(name); };
-    auto getPTE= [&](const char* name) -> QTextEdit* { return dlg.findChild<QTextEdit*>(name); };
-    auto getSB = [&](const char* name) -> QSpinBox*  { return dlg.findChild<QSpinBox*>(name); };
-    auto getCBB = [&](const char* name) -> QComboBox* { return dlg.findChild<QComboBox*>(name); };
+    constexpr int ResultNextPart = QDialog::Accepted + 42; // beliebig, nur eindeutig
 
-    if (auto w = getLE("edt_PartName"))               p.name = w->text().trimmed();
-    if (auto w = getLE("edt_ShortDescription"))       p.shortDescription = w->text().trimmed();
-    if (auto w = getCBB("cbb_Category"))              p.category = w->currentText().trimmed();
-    if (auto w = getCBB("cbb_SubCategory"))           p.subcategory = w->currentText().trimmed();
-    if (auto w = getPTE("txt_Description"))           p.description = w->toPlainText().trimmed();
-    if (auto w = getCBB("cbb_Source"))                p.supplier = w->currentText().trimmed();
-    if (auto w = getLE("edt_SourceLink"))             p.supplierLink = w->text().trimmed();
-    if (auto w = getCBB("cbb_AlternativeSource"))     p.altSupplier = w->currentText().trimmed();
-    if (auto w = getLE("edt_AlternativeSourceLink"))  p.altSupplierLink = w->text().trimmed();
-    if (auto w = getCBB("cbb_Manufacturer"))          p.manufacturer = w->currentText().trimmed();
-    if (auto w = getLE("edt_ManufacturerLink"))       p.manufacturerLink = w->text().trimmed();
-    if (auto w = getCBB("cbb_StorageLocation"))       p.storage = w->currentText().trimmed();
-    if (auto w = getLE("edt_StorageLocationDetails")) p.storageDetails = w->text().trimmed();
-    if (auto w = getCBB("cbb_Format"))                p.format = w->currentText().trimmed();
-    if (auto w = getCBB("cbb_Type"))                  p.type = w->currentText().trimmed();
-
-    p.localFiles.clear();
-    if (auto w = getLE("edt_PartFilesFolder")) {
-        const QString filePath = w->text().trimmed();
-        if (!filePath.isEmpty()) p.localFiles << filePath;
+    if (auto btnNext = dlg.findChild<QPushButton*>("btn_NextPart")) {
+        connect(btnNext, &QPushButton::clicked, &dlg, [&dlg]{
+            dlg.done(ResultNextPart);  // Dialog schließt, editPart() läuft weiter
+        });
     }
 
-    const QString chosenImage = dlg.property("chosenImagePath").toString();
-    if (!chosenImage.isEmpty()) p.imagePath = chosenImage;
+    bool createNewMode = false; // false=edit existing, true=create new based on current fields
 
-    if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
-    if (auto w = getLE("edt_Price")) {
-        bool ok=false; p.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
-        if (!ok) p.price = 0.0;
-    }
+    while (true) {
+        const int res = dlg.exec();
+        if (res == QDialog::Rejected) return;
 
-    if (p.name.trimmed().isEmpty()) {
-        QMessageBox::warning(this, tr("Eingabe prüfen"), tr("Bitte einen Namen eingeben."));
-        return;
-    }
+        // Werte zurücklesen (dein bestehender Code-Block: getLE/getPTE/getSB + p.* setzen)
+        // -> ich fasse das hier nicht komplett neu, du kannst 1:1 deinen Rücklese-Teil verwenden.
+        // Wichtig: wir befüllen je nach Modus ein Part-Objekt.
 
-    if (!m_repo->updatePart(p)) {
-        QMessageBox::warning(this, tr("Fehler"), tr("Bauteil konnte nicht gespeichert werden."));
-        return;
-    }
-
-    // UI aktualisieren und das bearbeitete Teil wieder selektieren
-    refillCategories();
-    applyFilters();
-    selectPartById(p.id);
-
-    connect(&dlg, &NewPartDialog::nextPartRequested, this, [&](){
-        if (true) {
-            // Für nächsten Eintrag leeren, Dialog bleibt offen
-            qDebug() << "saveFromDialog";
-            dlg.resetInputs();
-            // Fokus wieder auf den Namen setzen
-            if (auto *w = dlg.findChild<QLineEdit*>("edt_PartName")) w->setFocus();
-            qDebug() << "next Part requested";
+        Part out = p;          // Default: edit existing part
+        if (createNewMode) {
+            out = Part{};      // neue Instanz
+            out.deleted = false;
         }
-    });
+
+        // Werte zurücklesen (gleiches Muster wie in addNewPart)
+        auto getLE = [&](const char* name) -> QLineEdit* { return dlg.findChild<QLineEdit*>(name); };
+        auto getPTE= [&](const char* name) -> QTextEdit* { return dlg.findChild<QTextEdit*>(name); };
+        auto getSB = [&](const char* name) -> QSpinBox*  { return dlg.findChild<QSpinBox*>(name); };
+        auto getCBB = [&](const char* name) -> QComboBox* { return dlg.findChild<QComboBox*>(name); };
+
+        if (auto w = getLE("edt_PartName"))               out.name = w->text().trimmed();
+        if (auto w = getLE("edt_ShortDescription"))       out.shortDescription = w->text().trimmed();
+        if (auto w = getCBB("cbb_Category"))              out.category = w->currentText().trimmed();
+        if (auto w = getCBB("cbb_SubCategory"))           out.subcategory = w->currentText().trimmed();
+        if (auto w = getPTE("txt_Description"))           out.description = w->toPlainText().trimmed();
+        if (auto w = getCBB("cbb_Source"))                out.supplier = w->currentText().trimmed();
+        if (auto w = getLE("edt_SourceLink"))             out.supplierLink = w->text().trimmed();
+        if (auto w = getCBB("cbb_AlternativeSource"))     out.altSupplier = w->currentText().trimmed();
+        if (auto w = getLE("edt_AlternativeSourceLink"))  out.altSupplierLink = w->text().trimmed();
+        if (auto w = getCBB("cbb_Manufacturer"))          out.manufacturer = w->currentText().trimmed();
+        if (auto w = getLE("edt_ManufacturerLink"))       out.manufacturerLink = w->text().trimmed();
+        if (auto w = getCBB("cbb_StorageLocation"))       out.storage = w->currentText().trimmed();
+        if (auto w = getLE("edt_StorageLocationDetails")) out.storageDetails = w->text().trimmed();
+        if (auto w = getCBB("cbb_Format"))                out.format = w->currentText().trimmed();
+        if (auto w = getCBB("cbb_Type"))                  out.type = w->currentText().trimmed();
+
+        p.localFiles.clear();
+        if (auto w = getLE("edt_PartFilesFolder")) {
+            const QString filePath = w->text().trimmed();
+            if (!filePath.isEmpty()) out.localFiles << filePath;
+        }
+
+        const QString chosenImage = dlg.property("chosenImagePath").toString();
+        if (!chosenImage.isEmpty()) out.imagePath = chosenImage;
+
+        if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
+        if (auto w = getLE("edt_Price")) {
+            bool ok=false; out.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
+            if (!ok) out.price = 0.0;
+        }
+
+        if (out.name.trimmed().isEmpty()) {
+            QMessageBox::warning(this, tr("Eingabe prüfen"), tr("Bitte einen Namen eingeben."));
+            continue; // Dialog erneut anzeigen
+        }
+
+        bool ok = false;
+
+        if (!createNewMode) {
+            // 1) Edit speichern
+            ok = m_repo->updatePart(out);
+            if (ok) p = out; // p aktuell halten
+        } else {
+            // 2) Neues Bauteil anlegen (Felder bleiben im Dialog unverändert)
+            const int newId = m_repo->addPart(out);
+            ok = (newId > 0);
+            if (ok) out.id = newId;
+        }
+
+        if (!ok) {
+            QMessageBox::warning(this, tr("Fehler"), tr("Bauteil konnte nicht gespeichert werden."));
+            continue;
+        }
+
+        // UI aktualisieren
+        refillCategories();
+        applyFilters();
+        selectPartById(out.id);
+
+        if (res == ResultNextPart) {
+            // Nach dem Speichern in "Neu anlegen"-Modus wechseln – Felder bleiben absichtlich erhalten
+            createNewMode = true;
+            dlg.setWindowTitle(tr("Neues Bauteil anlegen (aus Vorlage)"));
+
+            // Komfort: Fokus auf Name, damit man schnell einen neuen Namen tippt
+            if (auto w = dlg.findChild<QLineEdit*>("edt_PartName")) {
+                w->setFocus();
+                w->selectAll();
+            }
+
+            continue; // Dialog wieder öffnen
+        }
+
+        // Normaler OK-Fall: Dialog beenden
+        return;
+    }
 }
 
 void MainWindow::toggleShowDeletedParts(bool checked) {
@@ -724,11 +783,3 @@ void MainWindow::restorePart(int id) {
         if (m_repo->updatePart(u)) { applyFilters(); /* selectPartById(u.id); */ }
     }
 }
-
-/*
-// Beispiel: Menü-Action „Vorgabelisten…“
-void MainWindow::on_act_ManagePresets_triggered()
-{
-
-}
-*/

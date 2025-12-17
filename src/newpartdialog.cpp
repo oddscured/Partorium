@@ -29,13 +29,12 @@ void NewPartDialog::prepareUI()
 }
 
 void NewPartDialog::hookUpSignals() {
-    // Einstellungen laden
-    //QSettings s; //("Partorium","Partorium");
+    // Einstellungen laden und in Strings schreiben
     QSettings s("Partorium","Partorium");
     const QString defaultImageFolder = s.value("defaultImageFolder").toString();
     const QString defaultPartsFilesFolder = s.value("defaultPartsFilesFolder").toString();
 
-    // UI Elemente vorbereiten
+    // UI Elemente vorbereiten. Die ComboBoxes mit Presets füllen
     JsonPartRepository::PresetsMap presets;
     m_repo->loadPresets(presets);
     GuiUtils::applyPresetToCombo(ui->cbb_Category, presets, "Kategorie");
@@ -48,11 +47,11 @@ void NewPartDialog::hookUpSignals() {
     GuiUtils::applyPresetToCombo(ui->cbb_AlternativeSource, presets, "Bezugsquelle");
 
 
-    connect(ui->btn_NextPart, &QPushButton::clicked, this, [this]{
-        qDebug() << "btn_NextPart clicked in dialog" << this;
-        emit nextPartRequested();
-        qDebug() << "nextPartRequested emitted" << this;
-    });
+    // connect(ui->btn_NextPart, &QPushButton::clicked, this, [this]{
+    //     //qDebug() << "btn_NextPart clicked in dialog" << this;
+    //     emit nextPartRequested();
+    //     //qDebug() << "nextPartRequested emitted" << this;
+    // });
 
     // NextPart button aus der UI nehmen
     if (auto nextBtn = this->findChild<QPushButton*>("btn_NextPart")) {
@@ -60,7 +59,7 @@ void NewPartDialog::hookUpSignals() {
         nextBtn->setDefault(false);
         connect(nextBtn, &QPushButton::clicked, this, [this](){
             // Zum Debuggen:
-            qDebug() << "btn_NextPart clicked -> emit nextPartRequested()";
+            qDebug() << "newpartdialog.cpp: btn_NextPart clicked -> emit nextPartRequested()";
             emit nextPartRequested();
         });
     } else {
@@ -68,9 +67,9 @@ void NewPartDialog::hookUpSignals() {
     }
 
 
-    // Buttons
+    // Ok-Button -> prüfen ob ein Name vergeben wurde, wenn nicht Meldung anzeigen. Ansonsten Dialog akzeptieren
+    // TODO: hier ggf. validieren/speichern
     connect(ui->btn_Ok, &QPushButton::clicked, this, [this]{
-        // TODO: hier ggf. validieren/speichern
         if(ui->edt_PartName->text() == "")
         {
             QMessageBox::critical(this, "Fehler", "Es muss mindestens ein Bauteilname vergeben werden!");
@@ -78,6 +77,7 @@ void NewPartDialog::hookUpSignals() {
         }
         this->accept();
     });
+
     // Abbrechen -> Dialog verwerfen
     connect(ui->btn_Cancel, &QPushButton::clicked, this, &QDialog::reject);
 
