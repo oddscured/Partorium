@@ -669,10 +669,7 @@ void MainWindow::editPart(int id) {
         const int res = dlg.exec();
         if (res == QDialog::Rejected) return;
 
-        // Werte zurücklesen (dein bestehender Code-Block: getLE/getPTE/getSB + p.* setzen)
-        // -> ich fasse das hier nicht komplett neu, du kannst 1:1 deinen Rücklese-Teil verwenden.
-        // Wichtig: wir befüllen je nach Modus ein Part-Objekt.
-
+        // Werte zurücklesen
         Part out = p;          // Default: edit existing part
         if (createNewMode) {
             out = Part{};      // neue Instanz
@@ -710,7 +707,7 @@ void MainWindow::editPart(int id) {
         const QString chosenImage = dlg.property("chosenImagePath").toString();
         if (!chosenImage.isEmpty()) out.imagePath = chosenImage;
 
-        if (auto w = getSB("spb_Quantity")) p.quantity = w->value();
+        if (auto w = getSB("spb_Quantity")) out.quantity = w->value();
         if (auto w = getLE("edt_Price")) {
             bool ok=false; out.price = w->text().trimmed().replace(',', '.').toDouble(&ok);
             if (!ok) out.price = 0.0;
@@ -753,6 +750,7 @@ void MainWindow::editPart(int id) {
             if (auto w = dlg.findChild<QLineEdit*>("edt_PartName")) {
                 w->setFocus();
                 w->selectAll();
+                w->setText("");
             }
 
             continue; // Dialog wieder öffnen
