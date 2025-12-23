@@ -90,18 +90,25 @@ void NewPartDialog::hookUpSignals() {
     auto edtFolder = this->findChild<QLineEdit*>("edt_PartFilesFolder");
 
     if (btnImg) {
+        /*
         connect(btnImg, &QPushButton::clicked, this, [this, lblImg, imglbl, defaultImageFolder]{
             const QString file = QFileDialog::getOpenFileName(this,
                                                               tr("Anzeigebild wählen"),
                                                               defaultImageFolder,//QString(),
                                                               tr("Bilder (*.png *.jpg *.jpeg *.bmp *.gif);;Alle Dateien (*)")
                                                               );
+        */
+        connect(btnImg, &QPushButton::clicked, this, [this, lblImg, imglbl, defaultImageFolder]{
+            const QString file = GuiUtils::getImageFileNameWithSearchString(this,
+                                                                 ui->edt_PartName->text().trimmed(),
+                                                                 defaultImageFolder);
+
             if (!file.isEmpty()) {
                 // Im Dialog merken (für MainWindow)
                 this->setProperty("chosenImagePath", file);
                 if (lblImg) lblImg->setText(QFileInfo(file).fileName());
                 if (imglbl) imglbl->setPixmap(QPixmap(file).scaled(128,128,Qt::KeepAspectRatio, Qt::SmoothTransformation));
-            }
+            } else qDebug() << "file was empty!";
         });
     }
 

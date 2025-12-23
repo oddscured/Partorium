@@ -22,6 +22,9 @@ public:
                             const PresetsMap &presets,
                             const QString &key,
                             bool editable = true);
+
+    // Suchdialog für Bilder, mit Vorgabe eines Such-Strings
+    static QString getImageFileNameWithSearchString(QWidget* parent, QString searchName, QString dir);
 };
 
 #endif // GUIUTILS_H

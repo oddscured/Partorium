@@ -1,8 +1,11 @@
 #pragma once
 #include <QComboBox>
+#include <QFileDialog>
 #include <QMap>
 #include <QStringList>
 #include "guiutils.h"
+#include <QDialog>
+#include <QTranslator>
 
 //GuiUtils::GuiUtils() {}
 
@@ -36,4 +39,27 @@ void GuiUtils::applyPresetToCombo(QComboBox *combo,
     combo->setEditable(editable);
     combo->setInsertPolicy(QComboBox::InsertAtTop);
     combo->blockSignals(false);
+}
+
+QString GuiUtils::getImageFileNameWithSearchString(QWidget* parent, QString searchName, QString dir)
+{
+
+    QString file = "";
+    QFileDialog dialog(parent);
+    dialog.setWindowTitle(("Bild auswählen"));
+    dialog.setDirectory(dir);
+
+    // Filter: nur Bilder, die den Bauteilnamen enthalten
+    dialog.setNameFilters({
+        QString(("Bilder (*%1*.png *%1*.jpg *%1*.jpeg *%1*.webp)")).arg(searchName),
+        ("Alle Bilder (*.png *.jpg *.jpeg *.webp)"),
+        ("Alle Dateien (*)")
+    });
+
+    dialog.setFileMode(QFileDialog::ExistingFile);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        return dialog.selectedFiles().at(0);
+    }
+    return file;
 }
