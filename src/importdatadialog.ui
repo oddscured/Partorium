@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Daten importieren</string>
   </property>
   <widget class="QGroupBox" name="grp_DataFile">
    <property name="geometry">
@@ -25,7 +25,7 @@
    <property name="title">
     <string>Datendatei</string>
    </property>
-   <widget class="QPushButton" name="btn_ChooseFile">
+   <widget class="QPushButton" name="btn_BrowseCsv">
     <property name="geometry">
      <rect>
       <x>530</x>
@@ -38,7 +38,7 @@
      <string>Datei öffnen</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="edt_ImportFileName">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -181,7 +181,7 @@
      <string>Zuweisungs-Übersicht</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableWidget" name="tbl_Mapping">
     <property name="geometry">
      <rect>
       <x>760</x>
@@ -210,6 +210,9 @@
      <width>100</width>
      <height>32</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::FocusPolicy::StrongFocus</enum>
    </property>
    <property name="text">
     <string>Abbrechen</string>
@@ -304,9 +307,18 @@
      <rect>
       <x>300</x>
       <y>30</y>
-      <width>61</width>
+      <width>58</width>
       <height>32</height>
      </rect>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+    <property name="insertPolicy">
+     <enum>QComboBox::InsertPolicy::NoInsert</enum>
+    </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
     </property>
     <item>
      <property name="text">
@@ -424,6 +436,9 @@
    </widget>
   </widget>
   <widget class="QPushButton" name="btn_LoadPreview">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -463,7 +478,7 @@
      <rect>
       <x>10</x>
       <y>230</y>
-      <width>161</width>
+      <width>391</width>
       <height>16</height>
      </rect>
     </property>
@@ -522,6 +537,48 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>edt_ImportFileName</tabstop>
+  <tabstop>btn_BrowseCsv</tabstop>
+  <tabstop>cbb_Encoding</tabstop>
+  <tabstop>cbb_Delimiter</tabstop>
+  <tabstop>spn_SkipRows</tabstop>
+  <tabstop>chb_BackupJSON</tabstop>
+  <tabstop>chb_HasHeader</tabstop>
+  <tabstop>chb_SkipEmptyRows</tabstop>
+  <tabstop>chb_StopOnError</tabstop>
+  <tabstop>chb_TrimWhitespace</tabstop>
+  <tabstop>spn_MaxRows</tabstop>
+  <tabstop>lst_CsvColumns</tabstop>
+  <tabstop>btn_MapToField</tabstop>
+  <tabstop>btn_Unmap</tabstop>
+  <tabstop>btn_AutoMap</tabstop>
+  <tabstop>btn_ClearMapping</tabstop>
+  <tabstop>lst_PartFields</tabstop>
+  <tabstop>tbl_Mapping</tabstop>
+  <tabstop>txt_Log</tabstop>
+  <tabstop>btn_LoadPreview</tabstop>
+  <tabstop>tbl_Preview</tabstop>
+  <tabstop>btn_StartImport</tabstop>
+  <tabstop>btn_Cancel</tabstop>
+ </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btn_Cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>ImportDataDialog</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1059</x>
+     <y>655</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>567</x>
+     <y>344</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

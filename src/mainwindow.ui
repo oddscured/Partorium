@@ -456,7 +456,7 @@
      <x>0</x>
      <y>0</y>
      <width>1079</width>
-     <height>37</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
@@ -467,6 +467,8 @@
     <addaction name="separator"/>
     <addaction name="act_SelectDatabase"/>
     <addaction name="act_OpenDatabaseFolder"/>
+    <addaction name="separator"/>
+    <addaction name="act_ImportData"/>
     <addaction name="separator"/>
     <addaction name="act_OpenSettingsDialog"/>
     <addaction name="act_ListManager"/>
@@ -541,6 +543,11 @@
    </property>
    <property name="text">
     <string>Felder bei neuem Bauteil initialisieren</string>
+   </property>
+  </action>
+  <action name="act_ImportData">
+   <property name="text">
+    <string>Daten importieren</string>
    </property>
   </action>
  </widget>

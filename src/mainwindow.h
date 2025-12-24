@@ -36,13 +36,14 @@ private:
     void loadOrInitRepository(const QString& path = QString());
     void openSettingsDialog();
     void openListManager();
+
     //void on_act_ManagePresets_triggered();
     // Neue Option zum Löschen und Ändern
 
 private slots:
     void onFileActivated(QListWidgetItem* item);
     void addNewPart();
-
+    void openImportDataDialog();
 
     // Neue Option zum Löschen und Ändern
     void onPartsContextMenuRequested(const QPoint& pos);

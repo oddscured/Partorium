@@ -47,6 +47,8 @@
 
 [ ] change tab order for newPartsDialog
 
+[ ] add auto-delimiter-recognition in importDataDialog
+
 ##
 
 ## Changes

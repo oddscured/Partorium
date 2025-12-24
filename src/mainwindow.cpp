@@ -19,6 +19,7 @@
 #include <QMimeDatabase>
 #include <QPushButton>
 #include "listmanagerdialog.h"
+#include "importdatadialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -61,9 +62,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_OpenDatabaseFolder, &QAction::triggered, this, &MainWindow::revealDatabaseFolder);
     connect(ui->act_OpenSettingsDialog, &QAction::triggered, this, &MainWindow::openSettingsDialog);
     connect(ui->act_ListManager, &QAction::triggered, this, &MainWindow::openListManager);
+    connect(ui->act_ImportData, &QAction::triggered, this, &MainWindow::openImportDataDialog);
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
     connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
+
 
 
     // Für das Menü "Ansicht"
@@ -780,4 +783,11 @@ void MainWindow::restorePart(int id) {
         Part u = *p; u.deleted = false;
         if (m_repo->updatePart(u)) { applyFilters(); /* selectPartById(u.id); */ }
     }
+}
+
+// Dialog zum Datenimport
+void MainWindow::openImportDataDialog()
+{
+    ImportDataDialog dlg(this);
+    dlg.exec();
 }
