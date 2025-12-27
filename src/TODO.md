@@ -6,6 +6,8 @@
 [ ] show additional images when clicking on main part image
 
 [ ] use new search textbox: https://doc.qt.io/qt-6/qml-qtquick-controls-searchfield.html?utm_source=installer&utm_medium=banner&utm_campaign=installer4Qt610
+
+[ ] add comment function to add individual comments to each item (i.e. used in robot car project, etc.)
 ##
 
 
