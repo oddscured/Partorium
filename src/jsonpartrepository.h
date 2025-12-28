@@ -46,6 +46,10 @@ public:
     bool loadPresets(PresetsMap& out) const;
     bool savePresets(const PresetsMap& in) const;
 
+    // Überprüfen, ob ein part schon existiert - wichtig beim Import von Dateien
+    bool existsExactPart(const Part& p) const;
+    bool existsDuplicateOf(const Part& p) const;
+
 private:
     QString m_path;               // kompletter Pfad zur JSON-Datei
     QVector<Part> m_parts;

@@ -5,6 +5,31 @@
 #include <QJsonArray>
 #include <QDateTime>
 
+
+// Alle möglichen Felder eines Bauteils - hauptsächlich für den Datenimportdialog
+static QStringList partFieldNames()
+{
+    return {
+        "name",
+        "shortDescription",
+        "category",
+        "subcategory",
+        "type",
+        "format",
+        "description",
+        "supplier",
+        "supplierLink",
+        "altSupplier",
+        "altSupplierLink",
+        "manufacturer",
+        "manufacturerLink",
+        "quantity",
+        "price",
+        "storage",
+        "storageDetails"
+    };
+}
+
 struct Part {
     int id = 0;                             // automatisch vergeben
     QString name;                           // Name

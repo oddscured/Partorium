@@ -68,7 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
 
 
-
     // Für das Menü "Ansicht"
     connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings().setValue("ui/initializeNewPartFields", checked);});
 
@@ -788,6 +787,22 @@ void MainWindow::restorePart(int id) {
 // Dialog zum Datenimport
 void MainWindow::openImportDataDialog()
 {
-    ImportDataDialog dlg(this);
+    ImportDataDialog dlg(m_repo, this);
+
+    // Wenn ein Import erfolgt ist, sendet der ImportDataDialog ein Signal an das MainWindow,
+    // damit dort die Part-Liste aktualisiert wird
+    connect(&dlg, &ImportDataDialog::importFinished, this,
+            [this](int importedCount, int duplicateCount, int errorCount) {
+
+                Q_UNUSED(duplicateCount);
+                Q_UNUSED(errorCount);
+
+                if (importedCount > 0) {
+                    refillCategories();
+                    applyFilters();
+                }
+            });
+
+
     dlg.exec();
 }

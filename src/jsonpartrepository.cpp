@@ -273,3 +273,97 @@ bool JsonPartRepository::savePresets(const JsonPartRepository::PresetsMap& in) c
     f.close();
     return true;
 }
+
+// Hilfsfunktion um zu Prüfen, ob 2 parts exakt gleich sind
+static bool partsEqualExact(const Part& a, const Part& b)
+{
+    // ID & Timestamps bewusst ignorieren (werden beim Add automatisch gesetzt)
+    if (a.name != b.name) { return false; }
+    if (a.shortDescription != b.shortDescription) { return false; }
+    if (a.category != b.category) { return false; }
+    if (a.subcategory != b.subcategory) { return false; }
+    if (a.type != b.type) { return false; }
+    if (a.format != b.format) { return false; }
+    if (a.description != b.description) { return false; }
+
+    if (a.supplier != b.supplier) { return false; }
+    if (a.supplierLink != b.supplierLink) { return false; }
+    if (a.altSupplier != b.altSupplier) { return false; }
+    if (a.altSupplierLink != b.altSupplierLink) { return false; }
+
+    if (a.manufacturer != b.manufacturer) { return false; }
+    if (a.manufacturerLink != b.manufacturerLink) { return false; }
+
+    if (a.localFiles != b.localFiles) { return false; }
+    if (a.quantity != b.quantity) { return false; }
+    if (a.price != b.price) { return false; }
+
+    if (a.storage != b.storage) { return false; }
+    if (a.storageDetails != b.storageDetails) { return false; }
+
+    if (a.imagePath != b.imagePath) { return false; }
+    if (a.images != b.images) { return false; }
+    if (a.hashtags != b.hashtags) { return false; }
+
+    if (a.deleted != b.deleted) { return false; }
+
+    return true;
+}
+
+// Prüfen ob ein part schon existiert - verhindert Duplikate beim Import oder bei der Neuanlage
+bool JsonPartRepository::existsExactPart(const Part& p) const
+{
+    for (const auto& existing : m_parts) {
+        if (partsEqualExact(existing, p)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Hilfsfunktion um zu Prüfen, ob 2 parts gleich sind (ignoriert einige Angaben wie id, timestamps, deleted)
+static bool partsEqualForDuplicateCheck(const Part& a, const Part& b)
+{
+    // id / createdAt / updatedAt werden ignoriert
+    // deleted wird ebenfalls ignoriert (Duplikat auch wenn deleted=true existiert)
+
+    if (a.name != b.name) { return false; }
+    if (a.shortDescription != b.shortDescription) { return false; }
+    if (a.category != b.category) { return false; }
+    if (a.subcategory != b.subcategory) { return false; }
+    if (a.type != b.type) { return false; }
+    if (a.format != b.format) { return false; }
+    if (a.description != b.description) { return false; }
+
+    if (a.supplier != b.supplier) { return false; }
+    if (a.supplierLink != b.supplierLink) { return false; }
+    if (a.altSupplier != b.altSupplier) { return false; }
+    if (a.altSupplierLink != b.altSupplierLink) { return false; }
+
+    if (a.manufacturer != b.manufacturer) { return false; }
+    if (a.manufacturerLink != b.manufacturerLink) { return false; }
+
+    if (a.localFiles != b.localFiles) { return false; }
+    if (a.quantity != b.quantity) { return false; }
+    if (a.price != b.price) { return false; }
+
+    if (a.storage != b.storage) { return false; }
+    if (a.storageDetails != b.storageDetails) { return false; }
+
+    if (a.imagePath != b.imagePath) { return false; }
+    if (a.images != b.images) { return false; }
+    if (a.hashtags != b.hashtags) { return false; }
+
+    return true;
+}
+
+// Duplikateprüfung für den Datenimport
+bool JsonPartRepository::existsDuplicateOf(const Part& p) const
+{
+    for (const auto& existing : m_parts) {
+        if (partsEqualForDuplicateCheck(existing, p)) {
+            return true;
+        }
+    }
+    return false;
+}

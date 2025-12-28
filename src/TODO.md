@@ -8,6 +8,15 @@
 [ ] use new search textbox: https://doc.qt.io/qt-6/qml-qtquick-controls-searchfield.html?utm_source=installer&utm_medium=banner&utm_campaign=installer4Qt610
 
 [ ] add comment function to add individual comments to each item (i.e. used in robot car project, etc.)
+
+[ ] add batch-update function (select multiple parts in the list -> context-click -> "batch update" -> change property for all selected parts
+
+[ ] add backup-function in DataImportDialog for partorium.json
+
+[ ] add MetaData field to part.json (i.e. DataImportDialog adds source file information)
+
+[ ] add DataExport function (export from json to csv)
+
 ##
 
 
