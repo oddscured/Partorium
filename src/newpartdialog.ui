@@ -700,6 +700,32 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>edt_PartName</tabstop>
+  <tabstop>edt_ShortDescription</tabstop>
+  <tabstop>cbb_Type</tabstop>
+  <tabstop>cbb_Category</tabstop>
+  <tabstop>cbb_SubCategory</tabstop>
+  <tabstop>cbb_Format</tabstop>
+  <tabstop>spb_Quantity</tabstop>
+  <tabstop>edt_Price</tabstop>
+  <tabstop>cbb_Source</tabstop>
+  <tabstop>edt_SourceLink</tabstop>
+  <tabstop>cbb_AlternativeSource</tabstop>
+  <tabstop>edt_AlternativeSourceLink</tabstop>
+  <tabstop>cbb_Manufacturer</tabstop>
+  <tabstop>edt_ManufacturerLink</tabstop>
+  <tabstop>cbb_StorageLocation</tabstop>
+  <tabstop>edt_StorageLocationDetails</tabstop>
+  <tabstop>txt_Description</tabstop>
+  <tabstop>btn_SelectPartFilesFolder</tabstop>
+  <tabstop>btn_ChooseImage</tabstop>
+  <tabstop>edt_PartFilesFolder</tabstop>
+  <tabstop>chb_ClearFields</tabstop>
+  <tabstop>btn_NextPart</tabstop>
+  <tabstop>btn_Ok</tabstop>
+  <tabstop>btn_Cancel</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

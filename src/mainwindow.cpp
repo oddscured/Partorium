@@ -20,6 +20,10 @@
 #include <QPushButton>
 #include "listmanagerdialog.h"
 #include "importdatadialog.h"
+#include <QRandomGenerator>
+#include <QImageReader>
+#include <QFutureWatcher>
+#include <QtConcurrent/QtConcurrent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -28,29 +32,26 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Settings laden
     QSettings s("Partorium","Partorium");
+
+    // Ansichts-Optionen laden -> checkboxen
     m_showDeletedParts = s.value("ui/showDeletedParts", false).toBool();
     ui->act_ShowDeletedParts->setChecked(m_showDeletedParts); // Option setzen wie in den Einstellungen geladen
     m_InitializeNewPartFileds = s.value("ui/initializeNewPartFields", false).toBool();
     ui->act_InitializeNewPartFields->setChecked(m_InitializeNewPartFileds);
-
-    //const bool init = s.value("ui/initializeNewPartFields", false).toBool();
-    //ui->act_InitializeNewPartFields->setChecked(init);
+    m_startWithRandom = s.value("ui/startWithRandomPart", false).toBool(); // Option zur Anzeige eines zufälligen Bauteils beim Programmstart
+    qDebug() << "Start with random part setting:" << m_startWithRandom;
+    ui->act_StartWithRandomPart->setChecked(m_startWithRandom);
 
 
     // Repository initialisieren: Pfad aus Settings oder Vorschlag (iCloud)
-    QString pathFromSettings = QSettings("Partorium","Partorium").value("databasePath").toString();
+    //QString pathFromSettings = QSettings("Partorium","Partorium").value("databasePath").toString();
+    QString pathFromSettings = s.value("databasePath").toString();
     loadOrInitRepository(pathFromSettings);
 
     // Repo + Models
     m_repo = new JsonPartRepository(this);
     m_repo->load();
     m_imagesModel = new QStandardItemModel(this);
-    //ui->lst_Images->setModel(m_imagesModel);
-
-    // Menüs/Aktionen
-    // Anzeige gelöschter Teile umschalten
-    //ui->act_ShowDeletedParts->setChecked(m_showDeletedParts);
-   connect(ui->act_ShowDeletedParts, &QAction::toggled, this, &MainWindow::toggleShowDeletedParts);
 
     // Kontektmenü für das Parts-List Widget
     ui->lst_Parts->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -69,13 +70,18 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     // Für das Menü "Ansicht"
-    connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings().setValue("ui/initializeNewPartFields", checked);});
+    connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings ("Partorium","Partorium").setValue("ui/initializeNewPartFields", checked);});
+    connect(ui->act_StartWithRandomPart, &QAction::toggled, this, [](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/startWithRandomPart", checked); qDebug() << "Set start with random part to" << checked; });
+    connect(ui->act_ShowDeletedParts, &QAction::toggled, this, [](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/showDeletedParts", checked);});
 
     // Kategorien aus Daten ableiten
     refillCategories();
 
     // Liste initial füllen
     applyFilters();
+
+    // Zufälliges Bauteil anzeigen wenn aktiviert
+    startWithRandomPartIfEnabled();
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -802,7 +808,98 @@ void MainWindow::openImportDataDialog()
                     applyFilters();
                 }
             });
-
-
     dlg.exec();
+}
+
+// Zufälliges Bauteil anzeigen, wenn die Option aktiviert ist
+void MainWindow::startWithRandomPartIfEnabled() {
+    if (!ui->act_StartWithRandomPart->isChecked()) {
+        qDebug() << "Start with random part not enabled";
+        return;
+    }
+    if (!m_repo) {
+        qDebug() << "No repository available for random part selection";
+        return;
+    }
+
+    QVector<int> candidateIds;
+    candidateIds.reserve(m_repo->allParts().size());
+    for (const auto& p : m_repo->allParts()) {
+        if (p.deleted) {
+            continue;
+        }
+        candidateIds.push_back(p.id);
+    }
+
+    if (candidateIds.isEmpty()) {
+        qDebug() << "No candidates available for random part selection";
+        return;
+    }
+
+    const int idx = QRandomGenerator::global()->bounded(candidateIds.size());
+    selectPartById(candidateIds[idx]);
+}
+
+// Hilfsfunktion für die asynchrone Bildanfrage und Anzeige
+void MainWindow::requestAndShowImageAsync(const QString& imagePath) {
+    if (imagePath.isEmpty()) {
+        ui->lbl_Image->setPixmap(QPixmap());
+        ui->lbl_Image->setText(tr("Kein Bild"));
+        ui->lbl_Image->setAlignment(Qt::AlignCenter);
+        return;
+    }
+
+    // “Platzhalter” sofort anzeigen, damit das UI nicht “steht”
+    ui->lbl_Image->setText(tr("Lade Bild..."));
+    ui->lbl_Image->setAlignment(Qt::AlignCenter);
+    ui->lbl_Image->setPixmap(QPixmap());
+
+    const int requestId = ++m_imageRequestId;
+
+    const QSize targetSize = ui->lbl_Image->size();
+    const qreal dpr = ui->lbl_Image->devicePixelRatioF();
+    const QSize scaledSize(qRound(targetSize.width() * dpr), qRound(targetSize.height() * dpr));
+
+    using ImageResult = QPair<int, QImage>;
+
+    auto* watcher = new QFutureWatcher<ImageResult>(this);
+
+    connect(watcher, &QFutureWatcher<ImageResult>::finished, this, [this, watcher]() {
+        const ImageResult res = watcher->result();
+        watcher->deleteLater();
+
+        // Falls in der Zwischenzeit schon ein anderes Part gewählt wurde: Ergebnis ignorieren
+        if (res.first != m_imageRequestId) {
+            return;
+        }
+
+        const QImage& img = res.second;
+        if (img.isNull()) {
+            ui->lbl_Image->setPixmap(QPixmap());
+            ui->lbl_Image->setText(tr("Bild konnte nicht geladen werden"));
+            ui->lbl_Image->setAlignment(Qt::AlignCenter);
+            return;
+        }
+
+        ui->lbl_Image->setText(QString());
+        ui->lbl_Image->setPixmap(QPixmap::fromImage(img));
+    });
+
+    auto future = QtConcurrent::run([imagePath, requestId, scaledSize, dpr]() -> ImageResult {
+        QImageReader reader(imagePath);
+        reader.setAutoTransform(true);
+
+        // Direkt beim Decoding skalieren (deutlich schneller als erst voll laden + dann scaled())
+        if (scaledSize.isValid()) {
+            reader.setScaledSize(scaledSize);
+        }
+
+        QImage img = reader.read();
+        if (!img.isNull()) {
+            img.setDevicePixelRatio(dpr);
+        }
+        return {requestId, img};
+    });
+
+    watcher->setFuture(future);
 }

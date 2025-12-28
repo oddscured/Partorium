@@ -107,9 +107,20 @@ void ImportDataDialog::hookUpSignals()
     }
 
     // Doppelklick als "zuweisen" verwenden
+    // wichtig: wenn nichts ausgewählt is auf beiden Seiten, passiert nichts
     auto lstCsv = findChild<QListWidget*>("lst_CsvColumns");
     if (lstCsv) {
         connect(lstCsv, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem*) {
+
+            auto lstPart = this->findChild<QListWidget*>("lst_PartFields");
+            if (!lstPart) {
+                return;
+            }
+
+            if (!lstPart->currentItem()) {
+                return;
+            }
+
             this->mapSelected();
         });
     }
@@ -716,6 +727,14 @@ void ImportDataDialog::mapSelected()
 
     m_csvToPart.insert(csvCol, partField);
     refreshMappingTable();
+
+    // Nach erfolgreichem Mapping wird die nächste CSV-Spalte markiert
+    const int currentRow = lstCsv->currentRow();
+    const int nextRow = currentRow + 1;
+
+    if (nextRow >= 0 && nextRow < lstCsv->count()) {
+        lstCsv->setCurrentRow(nextRow);
+    }
 }
 
 // Zuordnung der selektierten CSV-Spalte aufheben

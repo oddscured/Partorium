@@ -23,7 +23,7 @@ private:
     QStandardItemModel* m_imagesModel = nullptr;
     bool m_showDeletedParts = false;
     bool m_InitializeNewPartFileds = false;
-
+    bool m_startWithRandom = false;
 
     //void buildMenus();
     void refillCategories();
@@ -36,6 +36,13 @@ private:
     void loadOrInitRepository(const QString& path = QString());
     void openSettingsDialog();
     void openListManager();
+
+    // Ansichts-Menüs
+    void startWithRandomPartIfEnabled(); // Anzeige eines zufälligen Bauteils beim Programmstart
+
+    // Asynchrone Bildanzeige
+    int m_imageRequestId = 0;
+    void requestAndShowImageAsync(const QString& imagePath);
 
     //void on_act_ManagePresets_triggered();
     // Neue Option zum Löschen und Ändern

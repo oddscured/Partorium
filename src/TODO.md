@@ -17,6 +17,8 @@
 
 [ ] add DataExport function (export from json to csv)
 
+[ ] add 'Next' and 'Back' buttons to the NewPartDialog to allow browsing through the parts list
+
 ##
 
 
@@ -29,6 +31,8 @@
 [ ] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
 
 [ ] fix tab order in newpartdialog
+
+[ ] fix missing images in MessageDialogs (final delete, etc.)
 
 ##
 
@@ -59,6 +63,10 @@
 [ ] change tab order for newPartsDialog
 
 [ ] add auto-delimiter-recognition in importDataDialog
+
+[ ] check and adjust Tab-Orders in every Dialog
+
+[ ] load the images in a separate thread to improve the UI's responsiveness. 
 
 ##
 
