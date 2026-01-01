@@ -49,6 +49,13 @@ QString GuiUtils::getImageFileNameWithSearchString(QWidget* parent, QString sear
     dialog.setWindowTitle(("Bild auswählen"));
     dialog.setDirectory(dir);
 
+    // Erstes und letztes Zeichen von search Name entfernen damit die Suche funktioniert, Leerzeichen ebenfalls entfernen
+    searchName = searchName.removeFirst();
+    searchName = searchName.removeLast();
+    searchName = searchName.trimmed();
+    searchName = searchName.replace("-", "*");
+    searchName = searchName.replace(" ", "*");
+
     // Filter: nur Bilder, die den Bauteilnamen enthalten
     dialog.setNameFilters({
         QString(("Bilder (*%1*.png *%1*.jpg *%1*.jpeg *%1*.webp)")).arg(searchName),

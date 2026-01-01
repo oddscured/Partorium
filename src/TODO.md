@@ -22,7 +22,7 @@
 ##
 
 
-## To fix
+## To fix / bugs
 
 [ ] fix categories in mainwindow 
 
@@ -33,6 +33,10 @@
 [ ] fix tab order in newpartdialog
 
 [ ] fix missing images in MessageDialogs (final delete, etc.)
+
+[ ] list of files shows multiple entries of the same files
+
+[ ] after changing a part do not reset category filters in mainwindow
 
 ##
 
@@ -68,6 +72,7 @@
 
 [ ] load the images in a separate thread to improve the UI's responsiveness. 
 
+[ ] add delete image button in newpartdialog
 ##
 
 ## Changes
