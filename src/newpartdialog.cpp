@@ -88,17 +88,10 @@ void NewPartDialog::hookUpSignals() {
     auto lblImg = this->findChild<QLabel*>("lbl_ChooseImage");
     auto imglbl = this->findChild<QLabel*>("lbl_ImagePreview");
     auto edtFolder = this->findChild<QLineEdit*>("edt_PartFilesFolder");
+    auto btnDeleteImage = this->findChild<QPushButton*>("btn_DeleteImage");
 
     if (btnImg) {
-        /*
-        connect(btnImg, &QPushButton::clicked, this, [this, lblImg, imglbl, defaultImageFolder]{
-            const QString file = QFileDialog::getOpenFileName(this,
-                                                              tr("Anzeigebild wählen"),
-                                                              defaultImageFolder,//QString(),
-                                                              tr("Bilder (*.png *.jpg *.jpeg *.bmp *.gif);;Alle Dateien (*)")
-                                                              );
-        */
-        connect(btnImg, &QPushButton::clicked, this, [this, lblImg, imglbl, defaultImageFolder]{
+        connect(btnImg, &QPushButton::clicked, this, [this, lblImg, imglbl, defaultImageFolder, btnDeleteImage]{
             const QString file = GuiUtils::getImageFileNameWithSearchString(this,
                                                                  ui->edt_PartName->text().trimmed(),
                                                                  defaultImageFolder);
@@ -108,8 +101,28 @@ void NewPartDialog::hookUpSignals() {
                 this->setProperty("chosenImagePath", file);
                 if (lblImg) lblImg->setText(QFileInfo(file).fileName());
                 if (imglbl) imglbl->setPixmap(QPixmap(file).scaled(128,128,Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                if (btnDeleteImage) btnDeleteImage->setEnabled(true);
             } else qDebug() << "file was empty!";
         });
+    }
+
+    // Löschen Botton der ein existierendes Bild entfernt
+    if (btnDeleteImage) {
+        connect(btnDeleteImage, &QPushButton::clicked, this,
+                [this, lblImg, imglbl, btnDeleteImage] {
+                    this->setProperty("chosenImagePath", QVariant());
+                    if (lblImg) { lblImg->setText(tr("IMAGE")); }
+                    if (imglbl) {
+                        imglbl->clear();
+                        imglbl->setText(tr("IMAGE"));
+                        imglbl->setAlignment(Qt::AlignCenter);
+                    }
+                    this->setProperty("chosenImagePath", "");
+
+
+                    // Button wieder deaktivieren
+                    btnDeleteImage->setEnabled(false);
+                });
     }
 
     if (btnFolder) {

@@ -57,6 +57,19 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
+        <widget class="QPushButton" name="btn_DeleteImage">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Löschen</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
@@ -687,6 +700,9 @@
      <widget class="QPushButton" name="btn_Ok">
       <property name="text">
        <string>OK</string>
+      </property>
+      <property name="default">
+       <bool>true</bool>
       </property>
      </widget>
     </item>

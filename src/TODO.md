@@ -23,6 +23,7 @@
 
 
 ## To fix / bugs
+[ ] after changing a part do not reset category filters in mainwindow
 
 [ ] fix categories in mainwindow 
 
@@ -30,13 +31,13 @@
 
 [ ] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
 
-[ ] fix tab order in newpartdialog
-
-[ ] fix missing images in MessageDialogs (final delete, etc.)
+[x] fix tab order in newpartdialog
 
 [ ] list of files shows multiple entries of the same files
 
-[ ] after changing a part do not reset category filters in mainwindow
+[ ] fix missing images in MessageDialogs (final delete, etc.)
+
+[ ] fix word-wrap for storage label (all labels)
 
 ##
 
@@ -46,7 +47,7 @@
 
 [ ] Add input validation (name!) to newPartsDialog
 
-[ ] Add "next part" button to newpartdialog for fast entering of parts 
+[x] Add "next part" button to newpartdialog for fast entering of parts 
 
 [ ] Automatic backup of .json file
 
@@ -56,23 +57,26 @@
 
 [x] add filetype icons in parts folder view (lst_Files)
 
-[ ] create separate dialog to create categories
+[x] create separate dialog to create categories
 
 [ ] show message when part name already exists
 
 [ ] add tooltips to UI elements
 
-[ ] add menu to delete items permanently (with request-dialog)
+[x] add menu to delete items permanently (with request-dialog)
 
-[ ] change tab order for newPartsDialog
+[x] change tab order for newPartsDialog
 
 [ ] add auto-delimiter-recognition in importDataDialog
 
-[ ] check and adjust Tab-Orders in every Dialog
+[x] check and adjust Tab-Orders in every Dialog
 
-[ ] load the images in a separate thread to improve the UI's responsiveness. 
+[x] load the images in a separate thread to improve the UI's responsiveness. 
 
-[ ] add delete image button in newpartdialog
+[x] add delete image button in newpartdialog
+
+[ ] sort items in lists alphabtically
+
 ##
 
 ## Changes

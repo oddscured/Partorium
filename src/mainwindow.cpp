@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Für das Menü "Ansicht"
     connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings ("Partorium","Partorium").setValue("ui/initializeNewPartFields", checked);});
     connect(ui->act_StartWithRandomPart, &QAction::toggled, this, [](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/startWithRandomPart", checked); qDebug() << "Set start with random part to" << checked; });
-    connect(ui->act_ShowDeletedParts, &QAction::toggled, this, [](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/showDeletedParts", checked);});
+    connect(ui->act_ShowDeletedParts, &QAction::toggled, this, [this](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/showDeletedParts", checked);toggleShowDeletedParts(checked);});
 
     // Kategorien aus Daten ableiten
     refillCategories();
@@ -659,6 +659,12 @@ void MainWindow::editPart(int id) {
         if (auto imgLbl = dlg.findChild<QLabel*>("lbl_ImagePreview")) {
             QPixmap pm(p.imagePath);
             if (!pm.isNull()) imgLbl->setPixmap(pm.scaled(128,128,Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+            // Wenn ein Bild vorhanden ist, den Löschen-Button aktivieren
+            if (auto imgDeleteButton = dlg.findChild<QPushButton*>("btn_DeleteImage")) {
+                imgDeleteButton->setEnabled(true);
+                imgDeleteButton->clearMask();
+            }
         }
     }
 
@@ -714,6 +720,7 @@ void MainWindow::editPart(int id) {
 
         const QString chosenImage = dlg.property("chosenImagePath").toString();
         if (!chosenImage.isEmpty()) out.imagePath = chosenImage;
+                            else out.imagePath = ""; // löschen, falls entfernt
 
         if (auto w = getSB("spb_Quantity")) out.quantity = w->value();
         if (auto w = getLE("edt_Price")) {
