@@ -35,10 +35,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         listmanagerdialog.h listmanagerdialog.cpp listmanagerdialog.ui
         importdatadialog.h importdatadialog.cpp importdatadialog.ui
         batchchangedialog.h batchchangedialog.cpp batchchangedialog.ui
-
-
-
-
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Partorium APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
