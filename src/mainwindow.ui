@@ -31,7 +31,11 @@
       <widget class="QComboBox" name="cbb_Category"/>
      </item>
      <item>
-      <widget class="QListWidget" name="lst_Parts"/>
+      <widget class="QListWidget" name="lst_Parts">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -456,7 +460,7 @@
      <x>0</x>
      <y>0</y>
      <width>1079</width>
-     <height>37</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">

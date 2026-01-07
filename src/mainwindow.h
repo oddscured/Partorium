@@ -25,6 +25,7 @@ private:
     bool m_InitializeNewPartFileds = false;
     bool m_startWithRandom = false;
 
+
     //void buildMenus();
     void refillCategories();
     void applyFilters();                              // nutzt Suche + Kategorie
@@ -46,6 +47,9 @@ private:
 
     //void on_act_ManagePresets_triggered();
     // Neue Option zum Löschen und Ändern
+
+    // Dialoge
+    void openBatchEditDialog(const QVector<int>& ids);
 
 private slots:
     void onFileActivated(QListWidgetItem* item);

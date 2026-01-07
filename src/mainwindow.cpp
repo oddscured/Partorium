@@ -20,6 +20,7 @@
 #include <QPushButton>
 #include "listmanagerdialog.h"
 #include "importdatadialog.h"
+#include "batchchangedialog.h"
 #include <QRandomGenerator>
 #include <QImageReader>
 #include <QFutureWatcher>
@@ -512,6 +513,83 @@ void MainWindow::addNewPart() {
 }
 
 void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
+
+    auto* clickedItem = ui->lst_Parts->itemAt(pos);
+    if (!clickedItem) { return; }
+
+    // Wenn Rechtsklick auf nicht-ausgewähltes Item: Auswahl auf dieses setzen
+    if (!clickedItem->isSelected())
+    {
+        ui->lst_Parts->clearSelection();
+        clickedItem->setSelected(true);
+    }
+
+    const auto selected = ui->lst_Parts->selectedItems();
+    const int selCount = selected.size();
+    if (selCount <= 0) { return; }
+
+    QMenu m(this);
+
+    // Multi-Select => nur Batch-Menü anzeigen
+    if (selCount > 1)
+    {
+        QAction* actBatchEdit = m.addAction(tr("Batch-Änderung…"));
+
+        // Optional: Batch-Edit deaktivieren, wenn gelöschte Teile enthalten sind (oder anders behandeln)
+        bool anyDeleted = false;
+        for (auto* it : selected)
+        {
+            const int id = it->data(Qt::UserRole).toInt();
+            auto pOpt = m_repo->getPart(id);
+            if (pOpt && pOpt->deleted) { anyDeleted = true; }
+        }
+        if (anyDeleted) { actBatchEdit->setEnabled(false); }
+
+        QAction* chosen = m.exec(ui->lst_Parts->viewport()->mapToGlobal(pos));
+        if (!chosen) { return; }
+
+        if (chosen == actBatchEdit)
+        {
+            QVector<int> ids;
+            ids.reserve(selCount);
+            for (auto* it : selected) { ids.push_back(it->data(Qt::UserRole).toInt()); }
+
+            openBatchEditDialog(ids); // neue Funktion
+        }
+        return;
+    }
+
+    // Single-Select => dein bisheriges Menü (Edit/Delete/Restore)
+    const int id = selected.first()->data(Qt::UserRole).toInt();
+    auto pOpt = m_repo->getPart(id);
+    if (!pOpt) { return; }
+    const Part& p = *pOpt;
+
+    QAction* actEdit = nullptr;
+    QAction* actDelete = nullptr;
+    QAction* actRestore = nullptr;
+
+    if (p.deleted)
+    {
+        actRestore = m.addAction(tr("Wiederherstellen"));
+        m.addSeparator();
+        auto* a1 = m.addAction(tr("Ändern…")); a1->setEnabled(false);
+        auto* a2 = m.addAction(tr("Löschen")); a2->setEnabled(false);
+    }
+    else
+    {
+        actEdit = m.addAction(tr("Ändern…"));
+        actDelete = m.addAction(tr("Löschen"));
+    }
+
+    QAction* chosen = m.exec(ui->lst_Parts->viewport()->mapToGlobal(pos));
+    if (!chosen) { return; }
+
+    if (chosen == actEdit) { editPart(id); }
+    else if (chosen == actDelete) { deletePart(id); }
+    else if (chosen == actRestore) { restorePart(id); }
+
+    /*
     auto* item = ui->lst_Parts->itemAt(pos);
     if (!item) return;
 
@@ -548,6 +626,7 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos) {
     else if (chosen == actDelete) deletePart(id);
     else if (chosen == actRestore) restorePart(id);
     else if (chosen == actDeleteFinal) deletePartFinal(id);
+    */
 }
 
 void MainWindow::deletePart(int id) {
@@ -909,4 +988,38 @@ void MainWindow::requestAndShowImageAsync(const QString& imagePath) {
     });
 
     watcher->setFuture(future);
+}
+
+void MainWindow::openBatchEditDialog(const QVector<int>& ids)
+{
+    BatchChangeDialog dlg(this);
+
+    // Optional: Dialog kann anzeigen "Ändere 7 Teile"
+    dlg.setSelectionCount(ids.size());
+
+    if (dlg.exec() != QDialog::Accepted) { return; }
+
+    const PartBatchPatch patch = dlg.patch();
+
+    for (int id : ids)
+    {
+        auto pOpt = m_repo->getPart(id);
+        if (!pOpt) { continue; }
+
+        Part upd = *pOpt;
+
+        if (patch.category)    { upd.category = *patch.category; }
+        if (patch.subcategory) { upd.subcategory = *patch.subcategory; }
+        if (patch.format)      { upd.format = *patch.format; }
+        if (patch.type)        { upd.type = *patch.type; }
+
+        // optional: updatedAt setzen
+        upd.updatedAt = QDateTime::currentDateTime();
+
+        m_repo->updatePart(upd);
+    }
+
+    // UI refresh
+    refillCategories();
+    applyFilters();
 }

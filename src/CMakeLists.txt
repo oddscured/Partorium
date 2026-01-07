@@ -34,6 +34,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         guiutils.h guiutils.cpp
         listmanagerdialog.h listmanagerdialog.cpp listmanagerdialog.ui
         importdatadialog.h importdatadialog.cpp importdatadialog.ui
+        batchchangedialog.h batchchangedialog.cpp batchchangedialog.ui
 
 
 
