@@ -19,6 +19,9 @@
 
 [ ] add 'Next' and 'Back' buttons to the NewPartDialog to allow browsing through the parts list
 
+[ ] add HTML-Overview
+
+[ ] add ListView for all Parts in one QListView to enable fast-editing
 ##
 
 
@@ -75,7 +78,7 @@
 
 [x] add delete image button in newpartdialog
 
-[ ] sort items in lists alphabtically
+[ ] sort items in lists alphabetically
 
 ##
 

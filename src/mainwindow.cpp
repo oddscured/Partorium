@@ -540,10 +540,55 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
         QAction* chosen = m.exec(ui->lst_Parts->viewport()->mapToGlobal(pos));
         if (!chosen) return;
 
+
+        // if (chosen == actBatchChange) {
+        //     BatchChangeDialog dlg(this);
+        //     dlg.exec();
+        // }
+
+        /////////////////////////////////////////////////////////////////////////////////
+        ///  Batch-Change Dialog öffnen und IDs übergeben, bei Erfolg IDs zurücklesen ///
+        ///////////////////////////////////////////////////////////////////////////////////
         if (chosen == actBatchChange) {
+
+            QVector<int> ids;
+            ids.reserve(selected.size());
+            for (auto* it : selected) {
+                ids.push_back(it->data(Qt::UserRole).toInt());
+            }
+
             BatchChangeDialog dlg(this);
-            dlg.exec();
+            dlg.setPartIds(ids);      // NEU
+
+            if (dlg.exec() != QDialog::Accepted) {
+                return;
+            }
+
+            const BatchChangePatch patch = dlg.patch();
+            //const QVector<int> ids = dlg.partIds();
+
+            for (int id : ids)
+            {
+                auto pOpt = m_repo->getPart(id);
+                if (!pOpt) continue;
+
+                Part upd = *pOpt;
+
+                if (patch.category)    upd.category = *patch.category;
+                if (patch.subcategory) upd.subcategory = *patch.subcategory;
+                if (patch.format)      upd.format = *patch.format;
+                if (patch.type)        upd.type = *patch.type;
+                if (patch.storage)     upd.storage = *patch.storage;
+                if (patch.storageDetails) upd.storageDetails = *patch.storageDetails;
+                m_repo->updatePart(upd);
+            }
+
+            // Danach UI aktualisieren
+            applyFilters();      // oder deine passende Refresh-Funktion
+            // ggf. refillCategories(); wenn Kategorien-Listen gepflegt werden
+
         }
+
         return;
     }
 
