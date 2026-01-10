@@ -45,6 +45,7 @@ void NewPartDialog::hookUpSignals() {
     GuiUtils::applyPresetToCombo(ui->cbb_SubCategory, presets, "Unterkategorie");
     GuiUtils::applyPresetToCombo(ui->cbb_Type, presets, "Typ");
     GuiUtils::applyPresetToCombo(ui->cbb_AlternativeSource, presets, "Bezugsquelle");
+    ui->lbl_CurrencySymbol->setText(GuiUtils::getCurrencySymbol()); // Währungssymbol aus den Einstellungen verwenden
 
 
     // connect(ui->btn_NextPart, &QPushButton::clicked, this, [this]{

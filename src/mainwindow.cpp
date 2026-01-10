@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
     connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
-
+    connect(ui->lst_Parts, &QListWidget::doubleClicked, this, [this](const QModelIndex& index){if (!index.isValid()) return; const int id = ui->lst_Parts->item(index.row())->data(Qt::UserRole).toInt(); editPart(id);});
 
     // Für das Menü "Ansicht"
     connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings ("Partorium","Partorium").setValue("ui/initializeNewPartFields", checked);});
@@ -213,7 +213,7 @@ void MainWindow::showPart(const Part& p) {
     ui->lbl_AlternativeSourceValue->setText(p.altSupplier);
     ui->lbl_FormatValue->setText(p.format);
     ui->lbl_TypeValue->setText(p.type);
-    ui->lbl_PriceValue->setText(QString::number(p.price,'f',2) + " €");
+    ui->lbl_PriceValue->setText(QString::number(p.price,'f',2) + " " + GuiUtils::getCurrencySymbol());
 
     // Texteinträge mit Links
     GuiUtils::setLabelWithOptionalLink(ui->lbl_ManufacturerValue, p.manufacturer, p.manufacturerLink);
@@ -225,7 +225,7 @@ void MainWindow::showPart(const Part& p) {
     ui->txt_Description->setPlainText(p.description);
 
     //Bild laden, auf Größe des Labels skalieren und dann dort anzeigen
-    if(p.imagePath .isEmpty()) {
+    if(p.imagePath.isEmpty()) {
         ui->lbl_Image->setPixmap(QPixmap()); // leeren
         ui->lbl_Image->setText(tr("Kein Bild"));
         ui->lbl_Image->setAlignment(Qt::AlignCenter);
@@ -234,61 +234,21 @@ void MainWindow::showPart(const Part& p) {
     }
     else
     {
-        QPixmap partPixmap(p.imagePath);
-        QPixmap scaledPartPixmap = partPixmap.scaled(ui->lbl_Image->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        //ui->lbl_Image->setScaledContents(true);
-        ui->lbl_Image->setPixmap(scaledPartPixmap);
-    }
-
-
-    // Dateienliste rechts (alt, zeigt nur Ordner)
-    /*
-    ui->lst_Files->clear();
-    for (const auto& path : p.localFiles) {
-        auto fi = QFileInfo(path);
-        auto* it = new QListWidgetItem(fi.exists() ? fi.fileName() : path);
-        it->setToolTip(path);
-        it->setData(Qt::UserRole, path);
-        ui->lst_Files->addItem(it);
-    }
-    */
-
-    /*
-    // Dateienliste rechts
-    ui->lst_Files->clear();
-
-    for (const auto& path : p.localFiles) {
-        QFileInfo fi(path);
-
-        if (fi.exists() && fi.isDir()) {
-            // If this localFiles entry is a directory, list all files inside (non-recursive)
-            QDir dir(fi.absoluteFilePath());
-            const auto entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
-            if (entries.isEmpty()) {
-                // show an inert "empty folder" entry so the user can open the folder if desired
-                auto* it = new QListWidgetItem(tr("[Ordner leer] %1").arg(fi.fileName()));
-                it->setToolTip(fi.absoluteFilePath());
-                it->setData(Qt::UserRole, fi.absoluteFilePath());
-                it->setData(Qt::UserRole + 1, true); // mark as directory item (optional)
-                ui->lst_Files->addItem(it);
-            } else {
-                for (const auto& efi : entries) {
-                    auto* it = new QListWidgetItem(efi.fileName());
-                    it->setToolTip(efi.absoluteFilePath());
-                    it->setData(Qt::UserRole, efi.absoluteFilePath()); // full path for activation
-                    ui->lst_Files->addItem(it);
-                }
+        // zunächst nochmal prüfen, ob der Pfad nicht leer ist und das Bild als Datei existiert
+        if (!p.imagePath.isEmpty() && QFileInfo::exists(p.imagePath)) {
+            QPixmap pm(p.imagePath);
+            if (!pm.isNull()) {
+                ui->lbl_Image->setPixmap(pm.scaled(ui->lbl_Image->size(),
+                                                   Qt::KeepAspectRatio,
+                                                   Qt::SmoothTransformation));
+                return;
             }
-        } else {
-            // treat as file (existing or not) - display file name if possible, otherwise show path
-            const QString label = fi.exists() ? fi.fileName() : path;
-            auto* it = new QListWidgetItem(label);
-            it->setToolTip(path);
-            it->setData(Qt::UserRole, QFileInfo(path).absoluteFilePath());
-            ui->lst_Files->addItem(it);
         }
+        //QPixmap partPixmap(p.imagePath);
+        //QPixmap scaledPartPixmap = partPixmap.scaled(ui->lbl_Image->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        //ui->lbl_Image->setScaledContents(true);
+        //ui->lbl_Image->setPixmap(scaledPartPixmap);
     }
-*/
 
     // Dateiliste rechts mit Icons
     // Dateienliste rechts (with icons)
@@ -363,18 +323,19 @@ void MainWindow::showPart(const Part& p) {
     }
 }
 
+// bei Doppelklick auf eine Datei
 void MainWindow::onFileActivated(QListWidgetItem* item) {
     const QString path = item->data(Qt::UserRole).toString();
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
+// Dialog für die Einstellungen öffnen
 void MainWindow::openSettingsDialog() {
     SettingsDialog dlg(this);
     if (dlg.exec() != QDialog::Accepted) return;
 }
 
 void MainWindow::openListManager() {
-
     if (!m_repo) return;
 
     // 1) Laden
@@ -565,9 +526,8 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
             }
 
             const BatchChangePatch patch = dlg.patch();
-            //const QVector<int> ids = dlg.partIds();
 
-            for (int id : ids)
+            for (const auto &id: std::as_const(ids))
             {
                 auto pOpt = m_repo->getPart(id);
                 if (!pOpt) continue;
@@ -604,16 +564,17 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
     QAction* actEdit = nullptr;
     QAction* actDelete = nullptr;
     QAction* actRestore = nullptr;
+    QAction* actFinalDelete = nullptr;
 
     if (p.deleted)
     {
+        // Gelöschtes Bauteil, nur eines ausgewählt
         actRestore = m.addAction(tr("Wiederherstellen"));
-        // Optional: Separator und disabled Infos
-        // m.addSeparator();
-        // auto* info = m.addAction(tr("Dieses Bauteil ist gelöscht")); info->setEnabled(false);
+        actFinalDelete = m.addAction(tr("Endgültig löschen"));
     }
     else
     {
+        // nicht gelöschtes Bauteil, nur eines ausgewählt
         actEdit = m.addAction(tr("Ändern…"));
         actDelete = m.addAction(tr("Löschen"));
     }
@@ -627,6 +588,8 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
         deletePart(id);
     } else if (chosen == actRestore) {
         restorePart(id);
+    } else if (chosen == actFinalDelete) {
+        deletePartFinal(id);
     }
 }
 
@@ -651,16 +614,27 @@ void MainWindow::deletePartFinal(int id) {
     if (!m_repo) return;
 
     // Sicherheitsabfrage
-    auto btn = QMessageBox::warning(
-        this,
-        tr("Endgültig löschen"),
-        tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n"
-           "Dieser Vorgang kann nicht rückgängig gemacht werden.\n\n"
-           "Möchtest du fortfahren?"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No
-        );
-    if (btn != QMessageBox::Yes) return;
+    // auto btn = QMessageBox::question(
+    //     this,
+    //     tr("Endgültig löschen"),
+    //     tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n"
+    //        "Dieser Vorgang kann nicht rückgängig gemacht werden.\n\n"
+    //        "Möchtest du fortfahren?"),
+    //     QMessageBox::Yes | QMessageBox::No,
+    //     QMessageBox::No
+    //     );
+
+    // Sicherheitsabfrage aber mit Icon (unter MacOS sonst automatisch kein Icon)
+    auto btn = QMessageBox(this);
+    btn.setWindowTitle(tr("Bauteil wirklich löschen?"));
+    btn.setText(tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n"
+            "Dieser Vorgang kann nicht rückgängig gemacht werden.\n\n"
+            "Möchtest du fortfahren?"));
+    //btn.setIcon(QMessageBox::NoIcon);
+    btn.setIconPixmap(QPixmap(":/icons/warning.png"));
+    btn.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    //btn.exec();
+    if (btn.exec() != QMessageBox::Yes) return;
 
     // Bauteil wirklich löschen
     m_repo->removePart(id);

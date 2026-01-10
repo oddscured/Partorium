@@ -1,15 +1,15 @@
 ## Add features
-[ ] add selectable currency symbol to settings dialog and new part dialog + main window 
+[x] add selectable currency symbol to settings dialog and new part dialog + main window 
 
-[ ] add language selection to settings symbol and/or main menu bar 
+[c] add language selection to settings symbol and/or main menu bar 
 
-[ ] show additional images when clicking on main part image
+[c] show additional images when clicking on main part image
 
 [ ] use new search textbox: https://doc.qt.io/qt-6/qml-qtquick-controls-searchfield.html?utm_source=installer&utm_medium=banner&utm_campaign=installer4Qt610
 
 [ ] add comment function to add individual comments to each item (i.e. used in robot car project, etc.)
 
-[ ] add batch-update function (select multiple parts in the list -> context-click -> "batch update" -> change property for all selected parts
+[x] add batch-update function (select multiple parts in the list -> context-click -> "batch update" -> change property for all selected parts
 
 [ ] add backup-function in DataImportDialog for partorium.json
 
@@ -28,11 +28,11 @@
 ## To fix / bugs
 [ ] after changing a part do not reset category filters in mainwindow
 
-[ ] fix categories in mainwindow 
+[x] fix categories in mainwindow 
 
-[ ] fix "QPixmap::scaled: Pixmap is a null pixmap"
+[x] fix "QPixmap::scaled: Pixmap is a null pixmap"
 
-[ ] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
+[x] when clicking "choose image" in newpartdialog for the first time, the default folder from the settings is not used
 
 [x] fix tab order in newpartdialog
 
@@ -97,3 +97,10 @@
 [ ] use icons for categories on the left side[]
 
 ##
+
+
+## Legend
+
+[ ] open
+[x] done
+[c] canceled

@@ -25,6 +25,9 @@ public:
 
     // Suchdialog für Bilder, mit Vorgabe eines Such-Strings
     static QString getImageFileNameWithSearchString(QWidget* parent, QString searchName, QString dir);
+
+    // Standard-Währungssymbol
+    static QString getCurrencySymbol();
 };
 
 #endif // GUIUTILS_H

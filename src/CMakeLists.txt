@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,9 +26,13 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    # App-Icon (macOS)
+    set(APP_ICON_MACOS "${CMAKE_CURRENT_SOURCE_DIR}/../assets/icons/Partorium_Dock.icns")
+
     qt_add_executable(Partorium
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ${APP_ICON_MACOS}
         newpartdialog.h newpartdialog.cpp newpartdialog.ui
         part.h
         jsonpartrepository.h jsonpartrepository.cpp
@@ -39,6 +43,19 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         importdatadialog.h importdatadialog.cpp importdatadialog.ui
         batchchangedialog.h batchchangedialog.cpp batchchangedialog.ui
     )
+
+if(APPLE)
+    # Damit die .icns ins App-Bundle unter Resources kopiert wird
+    set_source_files_properties(${APP_ICON_MACOS} PROPERTIES
+        MACOSX_PACKAGE_LOCATION "Resources"
+    )
+
+    # Name, den macOS im Bundle erwartet
+    set_target_properties(Partorium PROPERTIES
+        MACOSX_BUNDLE_ICON_FILE "Partorium_Dock.icns"
+    )
+endif()
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Partorium APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
@@ -87,14 +104,3 @@ install(TARGETS Partorium
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(Partorium)
 endif()
-
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        ${TS_FILES}
-        part.h
-        jsonpartrepository.h
-        jsonpartrepository.cpp
-)

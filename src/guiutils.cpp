@@ -1,10 +1,11 @@
-#pragma once
+//#pragma once
 #include <QComboBox>
 #include <QFileDialog>
 #include <QMap>
 #include <QStringList>
 #include "guiutils.h"
 #include <QDialog>
+#include <QSettings>
 #include <QTranslator>
 
 //GuiUtils::GuiUtils() {}
@@ -69,4 +70,10 @@ QString GuiUtils::getImageFileNameWithSearchString(QWidget* parent, QString sear
         return dialog.selectedFiles().at(0);
     }
     return file;
+}
+
+QString GuiUtils::getCurrencySymbol()
+{
+    QSettings s("Partorium","Partorium");
+    return s.value("currencySymbol", "€").toString();
 }

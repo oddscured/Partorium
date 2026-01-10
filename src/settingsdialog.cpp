@@ -44,29 +44,48 @@ void SettingsDialog::hookUpSignals() {
     }
 }
 
+// Laden der Einstellungen in die Dialog-Elemente
 void SettingsDialog::loadSettings() {
+    // Einstellungen der Anwendung laden
     QSettings s("Partorium","Partorium");
+    // Standardordner für Bilder laden
     auto edtImagesFolder = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
     if (edtImagesFolder) {
         const QString v = s.value("defaultImageFolder").toString();
         edtImagesFolder->setText(v);
-    }
+    }  
+    // Standardordner für Bauteildateien laden
     auto edtFilesFolder = this->findChild<QLineEdit*>("edt_DefaultPartsFilesFolder");
     if (edtFilesFolder) {
         const QString v = s.value("defaultPartsFilesFolder").toString();
         edtFilesFolder->setText(v);
+    }    
+    // Währungssymbol laden
+    if (auto cbb = findChild<QComboBox*>("cbb_Currency")) {
+        const QString cur = s.value("currencySymbol", "€").toString();
+        int idx = cbb->findText(cur);
+        if (idx >= 0) cbb->setCurrentIndex(idx);
+        else cbb->setCurrentText(cur);
     }
 }
 
+// Speichern der Einstellungen aus den Dialog-Elementen
 void SettingsDialog::saveSettings() {
+    // Einstellungen der Anwendung speichern
     QSettings s("Partorium","Partorium");
+    // Standardordner für Bilder speichern
     auto edtImagesFolder = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
     if (edtImagesFolder) {
         s.setValue("defaultImageFolder", edtImagesFolder->text());
     }
+    // Standardordner für Bauteildateien speichern
     auto edtFilesFolder = this->findChild<QLineEdit*>("edt_DefaultPartsFilesFolder");
     if (edtFilesFolder) {
         s.setValue("defaultPartsFilesFolder", edtFilesFolder->text());
+    }
+    // Währungssymbol speichern
+    if (auto cbb = findChild<QComboBox*>("cbb_Currency")) {
+        s.setValue("currencySymbol", cbb->currentText());
     }
 }
 
