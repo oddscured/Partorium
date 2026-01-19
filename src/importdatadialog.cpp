@@ -925,14 +925,25 @@ void ImportDataDialog::startImport()
         progressLabel->setText(tr("Importiere..."));
     }
 
+    auto resetImportState = [this, progressLabel]() {
+        m_importRunning = false;
+        m_importFinished = false;
+        updateCloseButtonState();
+        if (progressLabel) {
+            progressLabel->setText(tr("Bereit..."));
+        }
+    };
+
     if (!m_repo) {
         QMessageBox::critical(this, tr("Import"), tr("Repository ist nicht verfügbar."));
+        resetImportState();
         return;
     }
 
     const QString path = chosenCsvPath();
     if (path.isEmpty()) {
         QMessageBox::warning(this, tr("Import"), tr("Bitte zuerst eine CSV-Datei auswählen."));
+        resetImportState();
         return;
     }
 
@@ -940,6 +951,7 @@ void ImportDataDialog::startImport()
     auto lstCsv = findChild<QListWidget*>("lst_CsvColumns");
     if (!lstCsv || lstCsv->count() == 0) {
         QMessageBox::warning(this, tr("Import"), tr("Bitte zuerst die Vorschau laden (CSV-Spalten fehlen)."));
+        resetImportState();
         return;
     }
 
@@ -953,12 +965,14 @@ void ImportDataDialog::startImport()
 
     if (m_csvToPart.isEmpty()) {
         QMessageBox::information(this, tr("Import"), tr("Es gibt keine Zuordnungen. Bitte Mapping erstellen."));
+        resetImportState();
         return;
     }
 
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::critical(this, tr("Import"), tr("Datei kann nicht geöffnet werden:\n%1").arg(path));
+        resetImportState();
         return;
     }
 
