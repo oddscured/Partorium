@@ -220,6 +220,8 @@ void MainWindow::showPart(const Part& p) {
     GuiUtils::setLabelWithOptionalLink(ui->lbl_SourceValue, p.supplier, p.supplierLink);
     GuiUtils::setLabelWithOptionalLink(ui->lbl_AlternativeSourceValue, p.altSupplier, p.altSupplierLink);
 
+    qDebug() << "Showing part ID" << p.id << "Name:" << p.name;
+
     // Hashtags (nur Text)
     //ui->lbl_HashtagsValues->setText(p.hashtags.join(", ")); //removed, still unused
     ui->txt_Description->setPlainText(p.description);
@@ -241,7 +243,8 @@ void MainWindow::showPart(const Part& p) {
                 ui->lbl_Image->setPixmap(pm.scaled(ui->lbl_Image->size(),
                                                    Qt::KeepAspectRatio,
                                                    Qt::SmoothTransformation));
-                return;
+                qDebug() << "Loaded image for part from" << p.imagePath;
+                //return;
             }
         }
         //QPixmap partPixmap(p.imagePath);
@@ -251,8 +254,9 @@ void MainWindow::showPart(const Part& p) {
     }
 
     // Dateiliste rechts mit Icons
-    // Dateienliste rechts (with icons)
     ui->lst_Files->clear();
+    qDebug() << "Filling file list for part ID" << p.id;
+
 
     QFileIconProvider iconProvider;
     QMimeDatabase mimeDb;
@@ -300,6 +304,7 @@ void MainWindow::showPart(const Part& p) {
                     it->setData(Qt::UserRole, efi.absoluteFilePath()); // full path for activation
                     it->setIcon(makeIconForFileInfo(efi));
                     ui->lst_Files->addItem(it);
+                    qDebug() << "Added file from directory:" << efi.absoluteFilePath();
                 }
             }
         } else {
@@ -627,8 +632,8 @@ void MainWindow::deletePartFinal(int id) {
     // Sicherheitsabfrage aber mit Icon (unter MacOS sonst automatisch kein Icon)
     auto btn = QMessageBox(this);
     btn.setWindowTitle(tr("Bauteil wirklich löschen?"));
-    btn.setText(tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n"
-            "Dieser Vorgang kann nicht rückgängig gemacht werden.\n\n"
+    btn.setText(tr("Dieses Bauteil wird dauerhaft aus der Datenbank entfernt.\n\n"
+            "Der Vorgang kann nicht rückgängig gemacht werden.\n\n"
             "Möchtest du fortfahren?"));
     //btn.setIcon(QMessageBox::NoIcon);
     btn.setIconPixmap(QPixmap(":/icons/warning.png"));

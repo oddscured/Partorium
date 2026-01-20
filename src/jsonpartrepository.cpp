@@ -8,7 +8,7 @@
 #include <QFileInfo>
 #include <QJsonValue>
 #include <QJsonObject>
-
+#include <QSet>
 
 JsonPartRepository::JsonPartRepository(QObject* parent, const QString& initialPath)
     : QObject(parent)
@@ -93,12 +93,33 @@ bool JsonPartRepository::load() {
 
     m_parts.clear();
     m_nextId = 1;
+    bool needsSave = false;
     const auto root = doc.object();
     if (root.contains("nextId")) m_nextId = root["nextId"].toInt(1);
     for (const auto& v : root["parts"].toArray()) {
-        m_parts.push_back(partFromJson(v.toObject()));
+        //m_parts.push_back(partFromJson(v.toObject()));
+        Part part = partFromJson(v.toObject());
+        const auto before = part.localFiles;
+        part.localFiles.removeAll(QString());
+        QSet<QString> seen;
+        QStringList normalized;
+        normalized.reserve(part.localFiles.size());
+        for (const auto& entry : before) {
+            const QString trimmed = entry.trimmed();
+            if (trimmed.isEmpty()) continue;
+            const QString normalizedPath = QDir::fromNativeSeparators(trimmed);
+            if (seen.contains(normalizedPath)) continue;
+            seen.insert(normalizedPath);
+            normalized << normalizedPath;
+        }
+        if (normalized != before) {
+            part.localFiles = normalized;
+            needsSave = true;
+        }
+        m_parts.push_back(part);
         m_nextId = std::max(m_nextId, m_parts.back().id + 1);
     }
+    if (needsSave) save();
     return true;
 }
 
@@ -118,6 +139,18 @@ bool JsonPartRepository::save() const {
 }
 
 int JsonPartRepository::addPart(Part p) {
+    QSet<QString> seen;
+    QStringList normalized;
+    normalized.reserve(p.localFiles.size());
+    for (const auto& entry : std::as_const(p.localFiles)) {
+        const QString trimmed = entry.trimmed();
+        if (trimmed.isEmpty()) continue;
+        const QString normalizedPath = QDir::fromNativeSeparators(trimmed);
+        if (seen.contains(normalizedPath)) continue;
+        seen.insert(normalizedPath);
+        normalized << normalizedPath;
+    }
+    p.localFiles = normalized;
     p.id = m_nextId++;
     p.createdAt = QDateTime::currentDateTimeUtc();
     p.updatedAt = p.createdAt;
@@ -128,7 +161,25 @@ int JsonPartRepository::addPart(Part p) {
 
 bool JsonPartRepository::updatePart(const Part& p) {
     for (auto& it : m_parts) {
-        if (it.id == p.id) { it = p; it.updatedAt = QDateTime::currentDateTimeUtc(); return save(); }
+        //if (it.id == p.id) { it = p; it.updatedAt = QDateTime::currentDateTimeUtc(); return save(); }
+        if (it.id == p.id) {
+            Part updated = p;
+            QSet<QString> seen;
+            QStringList normalized;
+            normalized.reserve(updated.localFiles.size());
+            for (const auto& entry : std::as_const(updated.localFiles)) {
+                const QString trimmed = entry.trimmed();
+                if (trimmed.isEmpty()) continue;
+                const QString normalizedPath = QDir::fromNativeSeparators(trimmed);
+                if (seen.contains(normalizedPath)) continue;
+                seen.insert(normalizedPath);
+                normalized << normalizedPath;
+            }
+            updated.localFiles = normalized;
+            it = updated;
+            it.updatedAt = QDateTime::currentDateTimeUtc();
+            return save();
+        }
     }
     return false;
 }
