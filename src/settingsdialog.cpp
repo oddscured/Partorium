@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QSettings>
 
+// Konstruktor: initialisiert UI, verbindet Signale und lädt gespeicherte Einstellungen
 SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
@@ -12,6 +13,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     loadSettings();
 }
 
+// Verknüpft UI-Elemente mit ihren Aktionen (Signal/Slot-Verbindungen)
 void SettingsDialog::hookUpSignals() {
     connect(this, &QDialog::accepted, this, &SettingsDialog::saveSettings);
     auto edtImagesFolder = this->findChild<QLineEdit*>("edt_DefaultImageFolder");
@@ -19,8 +21,8 @@ void SettingsDialog::hookUpSignals() {
     if (btnImagesFolder) {
         connect(btnImagesFolder, &QPushButton::clicked, this, [this, edtImagesFolder]{
             const QString folder = QFileDialog::getExistingDirectory(this,
-                                                              tr("Standard-Bilderordner wählen"), QString(),
-                                                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+                                                                     tr("Standard-Bilderordner wählen"), QString(),
+                                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
             if (!folder.isEmpty()) {
                 // Im Dialog merken (für MainWindow)
                 this->setProperty("chosenImagePath", folder);
@@ -33,8 +35,8 @@ void SettingsDialog::hookUpSignals() {
     if (btnFilesFolder) {
         connect(btnFilesFolder, &QPushButton::clicked, this, [this, edtFilesFolder]{
             const QString folder = QFileDialog::getExistingDirectory(this,
-                                                              tr("Standard-Bauteilordner wählen"), QString(),
-                                                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+                                                                     tr("Standard-Bauteilordner wählen"), QString(),
+                                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
             if (!folder.isEmpty()) {
                 // Im Dialog merken (für MainWindow)
                 this->setProperty("chosenPartFilesPath", folder);
@@ -44,7 +46,7 @@ void SettingsDialog::hookUpSignals() {
     }
 }
 
-// Laden der Einstellungen in die Dialog-Elemente
+// Lädt gespeicherte Einstellungen aus QSettings in die Dialogfelder
 void SettingsDialog::loadSettings() {
     // Einstellungen der Anwendung laden
     QSettings s("Partorium","Partorium");
@@ -53,13 +55,13 @@ void SettingsDialog::loadSettings() {
     if (edtImagesFolder) {
         const QString v = s.value("defaultImageFolder").toString();
         edtImagesFolder->setText(v);
-    }  
+    }
     // Standardordner für Bauteildateien laden
     auto edtFilesFolder = this->findChild<QLineEdit*>("edt_DefaultPartsFilesFolder");
     if (edtFilesFolder) {
         const QString v = s.value("defaultPartsFilesFolder").toString();
         edtFilesFolder->setText(v);
-    }    
+    }
     // Währungssymbol laden
     if (auto cbb = findChild<QComboBox*>("cbb_Currency")) {
         const QString cur = s.value("currencySymbol", "€").toString();
@@ -69,7 +71,7 @@ void SettingsDialog::loadSettings() {
     }
 }
 
-// Speichern der Einstellungen aus den Dialog-Elementen
+// Speichert die aktuellen Einstellungen aus dem Dialog in QSettings
 void SettingsDialog::saveSettings() {
     // Einstellungen der Anwendung speichern
     QSettings s("Partorium","Partorium");
@@ -89,6 +91,7 @@ void SettingsDialog::saveSettings() {
     }
 }
 
+// Destruktor: räumt die UI-Objekte auf
 SettingsDialog::~SettingsDialog()
 {
     delete ui;

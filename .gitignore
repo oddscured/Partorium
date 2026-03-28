@@ -1,12 +1,14 @@
 # Build & CMake
-**/build*/
-**/out/
-**/CMakeFiles/
-**/CMakeCache.txt
-**/*-Debug/
-**/cmake-build-*/
-*.obj
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+.cmake/
+.qtc*
+
+# Compiler / binaries
 *.o
+*.obj
 *.a
 *.lib
 *.dll
@@ -14,12 +16,19 @@
 *.dylib
 *.pdb
 
-# Qt Creator / clangd
+# Qt Creator
 *.user
 *.pro.user
 *.autosave
-.qtc_clangd/
+.qtc/
+.qt/
 qtcreator.db
+
+# Ninja
+.ninja_*
+
+# Temp
+tmp/
 
 # OS
 .DS_Store
@@ -28,6 +37,6 @@ Thumbs.db
 # Logs
 *.log
 
-# vcpkg / conan (falls genutzt)
-vcpkg_installed/
+# Package manager
 .conan/
+vcpkg_installed/
