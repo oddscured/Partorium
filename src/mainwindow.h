@@ -2,8 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QActionGroup>
 #include <QStandardItemModel>
 #include <QListWidgetItem>
+#include <QTreeWidgetItem>
 #include <QSettings>
 #include "jsonpartrepository.h"
 
@@ -17,6 +19,14 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    enum class GroupingMode {
+        None,
+        Category,
+        Subcategory,
+        Type,
+        Format
+    };
+
 private:
     Ui::MainWindow *ui;
     JsonPartRepository* m_repo = nullptr;
@@ -24,6 +34,8 @@ private:
     bool m_showDeletedParts = false;
     bool m_InitializeNewPartFileds = false;
     bool m_startWithRandom = false;
+    GroupingMode m_groupingMode = GroupingMode::Category;
+    QActionGroup* m_groupingActionGroup = nullptr;
 
 
     //void buildMenus();
@@ -32,6 +44,12 @@ private:
     void refreshPartList(const QVector<Part>& parts);
     void showPart(const Part& p);
     void selectPartById(int id);
+    void populatePartTree(const QVector<Part>& parts);
+    QTreeWidgetItem* findPartItemById(int id) const;
+    QString groupKeyForPart(const Part& p) const;
+    QString groupingSettingKey() const;
+    void setupGroupingMenu();
+    void setGroupingMode(GroupingMode mode);
     void chooseDatabasePath();
     void revealDatabaseFolder();
     void loadOrInitRepository(const QString& path = QString());

@@ -24,6 +24,8 @@
 #include <QRandomGenerator>
 #include <QImageReader>
 #include <QFutureWatcher>
+#include <QTreeWidgetItem>
+#include <QSignalBlocker>
 #include <QtConcurrent/QtConcurrent>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -42,6 +44,18 @@ MainWindow::MainWindow(QWidget *parent)
     m_startWithRandom = s.value("ui/startWithRandomPart", false).toBool(); // Option zur Anzeige eines zufälligen Bauteils beim Programmstart
     qDebug() << "Start with random part setting:" << m_startWithRandom;
     ui->act_StartWithRandomPart->setChecked(m_startWithRandom);
+    const QString groupingSetting = s.value(groupingSettingKey(), "category").toString();
+    if (groupingSetting == "none") {
+        m_groupingMode = GroupingMode::None;
+    } else if (groupingSetting == "subcategory") {
+        m_groupingMode = GroupingMode::Subcategory;
+    } else if (groupingSetting == "type") {
+        m_groupingMode = GroupingMode::Type;
+    } else if (groupingSetting == "format") {
+        m_groupingMode = GroupingMode::Format;
+    } else {
+        m_groupingMode = GroupingMode::Category;
+    }
 
 
     // Repository initialisieren: Pfad aus Settings oder Vorschlag (iCloud)
@@ -56,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Kontektmenü für das Parts-List Widget
     ui->lst_Parts->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->lst_Parts, &QListWidget::customContextMenuRequested,this, &MainWindow::onPartsContextMenuRequested);
+    connect(ui->lst_Parts, &QTreeWidget::customContextMenuRequested,this, &MainWindow::onPartsContextMenuRequested);
 
     // Signale (Suche / Files / Auswahl)
     connect(ui->act_NewPart, &QAction::triggered, this, &MainWindow::addNewPart);
@@ -67,13 +81,24 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_ImportData, &QAction::triggered, this, &MainWindow::openImportDataDialog);
     connect(ui->lne_Search, &QLineEdit::textChanged, this, &MainWindow::applyFilters);
     connect(ui->lst_Files, &QListWidget::itemActivated, this, &MainWindow::onFileActivated);
-    connect(ui->lst_Parts, &QListWidget::currentItemChanged, this,[this](QListWidgetItem* cur, QListWidgetItem*) {if (!cur) return;const int id = cur->data(Qt::UserRole).toInt();if (auto p = m_repo->getPart(id)) showPart(*p);});
-    connect(ui->lst_Parts, &QListWidget::doubleClicked, this, [this](const QModelIndex& index){if (!index.isValid()) return; const int id = ui->lst_Parts->item(index.row())->data(Qt::UserRole).toInt(); editPart(id);});
+    connect(ui->lst_Parts, &QTreeWidget::currentItemChanged, this,
+            [this](QTreeWidgetItem* cur, QTreeWidgetItem*) {
+                if (!cur || cur->childCount() > 0) return;
+                const int id = cur->data(0, Qt::UserRole).toInt();
+                if (auto p = m_repo->getPart(id)) showPart(*p);
+            });
+    connect(ui->lst_Parts, &QTreeWidget::itemDoubleClicked, this,
+            [this](QTreeWidgetItem* item, int) {
+                if (!item || item->childCount() > 0) return;
+                editPart(item->data(0, Qt::UserRole).toInt());
+            });
 
     // Für das Menü "Ansicht"
     connect(ui->act_InitializeNewPartFields, &QAction::toggled,this, [](bool checked){ QSettings ("Partorium","Partorium").setValue("ui/initializeNewPartFields", checked);});
     connect(ui->act_StartWithRandomPart, &QAction::toggled, this, [](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/startWithRandomPart", checked); qDebug() << "Set start with random part to" << checked; });
     connect(ui->act_ShowDeletedParts, &QAction::toggled, this, [this](bool checked) { QSettings ("Partorium","Partorium").setValue("ui/showDeletedParts", checked);toggleShowDeletedParts(checked);});
+    connect(ui->cbb_Category, &QComboBox::currentTextChanged, this, &MainWindow::applyFilters);
+    setupGroupingMenu();
 
     // Kategorien aus Daten ableiten
     refillCategories();
@@ -143,61 +168,219 @@ void MainWindow::revealDatabaseFolder() {
 }
 
 void MainWindow::refillCategories() {
+    const QSignalBlocker blocker(ui->cbb_Category);
+    const QString previousSelection = ui->cbb_Category->currentText();
+
     ui->cbb_Category->clear();
     ui->cbb_Category->addItem("Alle Kategorien");
     // Einmal alle Teile holen und Kategorien extrahieren
     QSet<QString> cats;
     for (const auto& p : m_repo->allParts()) {
-        if (!p.hashtags.contains("deleted", Qt::CaseInsensitive))
+        if (!p.deleted)
             cats.insert(p.category);
     }
     QStringList list = cats.values();
     list.sort(Qt::CaseInsensitive);
     ui->cbb_Category->addItems(list);
-    connect(ui->cbb_Category, &QComboBox::currentTextChanged, this, &MainWindow::applyFilters);
+
+    const int idx = ui->cbb_Category->findText(previousSelection);
+    ui->cbb_Category->setCurrentIndex(idx >= 0 ? idx : 0);
 }
 
 void MainWindow::applyFilters() {
     const QString term = ui->lne_Search->text();
     const QString cat  = ui->cbb_Category->currentText();
     const auto parts   = m_repo->searchParts(term, cat);
-
-    ui->lst_Parts->clear();
-    for (const auto& p : parts) {
-        if (!m_showDeletedParts && p.deleted) continue;
-
-        auto* it = new QListWidgetItem(p.name, ui->lst_Parts);
-        it->setData(Qt::UserRole, p.id);
-
-        // Optische Kennzeichnung für gelöschte Einträge (nur wenn sichtbar)
-        if (p.deleted) {
-            QFont f = it->font();
-            f.setStrikeOut(true);
-            it->setFont(f);
-            it->setForeground(QBrush(Qt::gray));
-            it->setToolTip(tr("Gelöscht"));
-        }
-    }
-    // ggf. Auswahl wiederherstellen etc.
+    populatePartTree(parts);
 }
 
 void MainWindow::refreshPartList(const QVector<Part>& parts) {
-    ui->lst_Parts->clear();
-    for (const auto& p : parts) {
-        auto* it = new QListWidgetItem(p.name);
-        it->setData(Qt::UserRole, p.id);
-        ui->lst_Parts->addItem(it);
-    }
+    populatePartTree(parts);
 }
 
 void MainWindow::selectPartById(int id) {
-    for (int i=0;i<ui->lst_Parts->count();++i) {
-        auto* it = ui->lst_Parts->item(i);
-        if (it->data(Qt::UserRole).toInt() == id) {
-            ui->lst_Parts->setCurrentItem(it);
-            break;
+    if (auto* item = findPartItemById(id)) {
+        if (auto* parent = item->parent()) {
+            parent->setExpanded(true);
+        }
+        ui->lst_Parts->setCurrentItem(item);
+    }
+}
+
+void MainWindow::populatePartTree(const QVector<Part>& parts) {
+    const auto currentItem = ui->lst_Parts->currentItem();
+    const int currentId = currentItem ? currentItem->data(0, Qt::UserRole).toInt() : -1;
+
+    ui->lst_Parts->clear();
+
+    if (m_groupingMode == GroupingMode::None) {
+        for (const auto& p : parts) {
+            if (!m_showDeletedParts && p.deleted) continue;
+            auto* partItem = new QTreeWidgetItem(ui->lst_Parts);
+            partItem->setText(0, p.name);
+            partItem->setData(0, Qt::UserRole, p.id);
+
+            if (p.deleted) {
+                QFont f = partItem->font(0);
+                f.setStrikeOut(true);
+                partItem->setFont(0, f);
+                partItem->setForeground(0, QBrush(Qt::gray));
+                partItem->setToolTip(0, tr("Gelöscht"));
+            }
+        }
+    } else {
+        QMap<QString, QVector<Part>> groupedParts;
+        for (const auto& p : parts) {
+            if (!m_showDeletedParts && p.deleted) continue;
+            groupedParts[groupKeyForPart(p)].push_back(p);
+        }
+
+        for (auto it = groupedParts.cbegin(); it != groupedParts.cend(); ++it) {
+            auto* categoryItem = new QTreeWidgetItem(ui->lst_Parts);
+            categoryItem->setText(0, it.key());
+            categoryItem->setFlags(Qt::ItemIsEnabled);
+            categoryItem->setFirstColumnSpanned(true);
+            categoryItem->setExpanded(true);
+            QFont categoryFont = categoryItem->font(0);
+            categoryFont.setBold(true); // Kategorieüberschriften im TreeView werden fett dargestellt
+            categoryItem->setFont(0, categoryFont);
+
+            for (const auto& p : it.value()) {
+                auto* partItem = new QTreeWidgetItem(categoryItem);
+                partItem->setText(0, p.name);
+                partItem->setData(0, Qt::UserRole, p.id);
+
+                if (p.deleted) {
+                    QFont f = partItem->font(0);
+                    f.setStrikeOut(true);
+                    partItem->setFont(0, f);
+                    partItem->setForeground(0, QBrush(Qt::gray));
+                    partItem->setToolTip(0, tr("Gelöscht"));
+                }
+            }
         }
     }
+
+    if (currentId >= 0) {
+        selectPartById(currentId);
+    }
+}
+
+QTreeWidgetItem* MainWindow::findPartItemById(int id) const {
+    for (int i = 0; i < ui->lst_Parts->topLevelItemCount(); ++i) {
+        auto* topLevelItem = ui->lst_Parts->topLevelItem(i);
+        if (topLevelItem->childCount() == 0) {
+            if (topLevelItem->data(0, Qt::UserRole).toInt() == id) {
+                return topLevelItem;
+            }
+            continue;
+        }
+        for (int j = 0; j < topLevelItem->childCount(); ++j) {
+            auto* partItem = topLevelItem->child(j);
+            if (partItem->data(0, Qt::UserRole).toInt() == id) {
+                return partItem;
+            }
+        }
+    }
+    return nullptr;
+}
+
+QString MainWindow::groupKeyForPart(const Part& p) const {
+    QString value;
+    QString fallback;
+
+    switch (m_groupingMode) {
+    case GroupingMode::Category:
+        value = p.category.trimmed();
+        fallback = tr("Ohne Kategorie");
+        break;
+    case GroupingMode::Subcategory:
+        value = p.subcategory.trimmed();
+        fallback = tr("Ohne Unterkategorie");
+        break;
+    case GroupingMode::Type:
+        value = p.type.trimmed();
+        fallback = tr("Ohne Typ");
+        break;
+    case GroupingMode::Format:
+        value = p.format.trimmed();
+        fallback = tr("Ohne Format");
+        break;
+    case GroupingMode::None:
+        return QString();
+    }
+
+    return value.isEmpty() ? fallback : value;
+}
+
+QString MainWindow::groupingSettingKey() const {
+    return QStringLiteral("ui/partsGrouping");
+}
+
+void MainWindow::setupGroupingMenu() {
+    m_groupingActionGroup = new QActionGroup(this);
+    m_groupingActionGroup->setExclusive(true);
+
+    const QList<QAction*> groupingActions = {
+        ui->act_GroupNone,
+        ui->act_GroupCategory,
+        ui->act_GroupSubcategory,
+        ui->act_GroupType,
+        ui->act_GroupFormat
+    };
+    for (auto* action : groupingActions) {
+        m_groupingActionGroup->addAction(action);
+    }
+
+    switch (m_groupingMode) {
+    case GroupingMode::None:
+        ui->act_GroupNone->setChecked(true);
+        break;
+    case GroupingMode::Category:
+        ui->act_GroupCategory->setChecked(true);
+        break;
+    case GroupingMode::Subcategory:
+        ui->act_GroupSubcategory->setChecked(true);
+        break;
+    case GroupingMode::Type:
+        ui->act_GroupType->setChecked(true);
+        break;
+    case GroupingMode::Format:
+        ui->act_GroupFormat->setChecked(true);
+        break;
+    }
+
+    connect(ui->act_GroupNone, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::None); });
+    connect(ui->act_GroupCategory, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Category); });
+    connect(ui->act_GroupSubcategory, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Subcategory); });
+    connect(ui->act_GroupType, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Type); });
+    connect(ui->act_GroupFormat, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Format); });
+}
+
+void MainWindow::setGroupingMode(GroupingMode mode) {
+    m_groupingMode = mode;
+
+    QString settingValue = "category";
+    switch (m_groupingMode) {
+    case GroupingMode::None:
+        settingValue = "none";
+        break;
+    case GroupingMode::Category:
+        settingValue = "category";
+        break;
+    case GroupingMode::Subcategory:
+        settingValue = "subcategory";
+        break;
+    case GroupingMode::Type:
+        settingValue = "type";
+        break;
+    case GroupingMode::Format:
+        settingValue = "format";
+        break;
+    }
+
+    QSettings("Partorium","Partorium").setValue(groupingSettingKey(), settingValue);
+    applyFilters();
 }
 
 void MainWindow::showPart(const Part& p) {
@@ -481,7 +664,7 @@ void MainWindow::addNewPart() {
 void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
 {
     auto* clickedItem = ui->lst_Parts->itemAt(pos);
-    if (!clickedItem) return;
+    if (!clickedItem || clickedItem->childCount() > 0) return;
 
     // Rechtsklick auf nicht-ausgewähltes Item -> Auswahl nur dieses Item
     if (!clickedItem->isSelected()) {
@@ -520,8 +703,11 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
             QVector<int> ids;
             ids.reserve(selected.size());
             for (auto* it : selected) {
-                ids.push_back(it->data(Qt::UserRole).toInt());
+                if (it->childCount() == 0) {
+                    ids.push_back(it->data(0, Qt::UserRole).toInt());
+                }
             }
+            if (ids.isEmpty()) return;
 
             BatchChangeDialog dlg(this);
             dlg.setPartIds(ids);      // NEU
@@ -559,7 +745,7 @@ void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
 
     // Nur ein Bauteil ausgewählt: Ändern/Löschen oder Wiederherstellen
     auto* item = selected.first();
-    const int id = item->data(Qt::UserRole).toInt();
+    const int id = item->data(0, Qt::UserRole).toInt();
 
     auto pOpt = m_repo->getPart(id);
     if (!pOpt) return;
