@@ -100,6 +100,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cbb_Category, &QComboBox::currentTextChanged, this, &MainWindow::applyFilters);
     setupGroupingMenu();
 
+    // Buttons
+    connect(ui->btn_CollapseAll, &QPushButton::clicked, ui->lst_Parts, &QTreeWidget::collapseAll);
+    connect(ui->btn_ExpandAll, &QPushButton::clicked, ui->lst_Parts, &QTreeWidget::expandAll);
+
     // Kategorien aus Daten ableiten
     refillCategories();
 
