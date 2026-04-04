@@ -463,9 +463,15 @@
            <height>24</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>24</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">QLineEdit#lne_Search {
-	min-height: 14px;
+	min-height: 12px;
 	padding: 4px 10px 4px 8px;
 	border: 1px solid #bfc7d1;
 	border-radius: 10px;

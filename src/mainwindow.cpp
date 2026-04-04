@@ -103,6 +103,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Buttons
     connect(ui->btn_CollapseAll, &QPushButton::clicked, ui->lst_Parts, &QTreeWidget::collapseAll);
     connect(ui->btn_ExpandAll, &QPushButton::clicked, ui->lst_Parts, &QTreeWidget::expandAll);
+    connect(ui->btn_Quit, &QPushButton::clicked, this, &MainWindow::close);
+    connect(ui->btn_NewPart, &QPushButton::clicked, this, &MainWindow::addNewPart);
 
     // Kategorien aus Daten ableiten
     refillCategories();
