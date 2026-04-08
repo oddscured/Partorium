@@ -7,7 +7,9 @@
 #include <QListWidgetItem>
 #include <QTreeWidgetItem>
 #include <QSettings>
+#include <optional>
 #include "jsonpartrepository.h"
+#include "stockmanagementrepository.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -36,6 +38,7 @@ private:
     bool m_startWithRandom = false;
     GroupingMode m_groupingMode = GroupingMode::Category;
     QActionGroup* m_groupingActionGroup = nullptr;
+    StockManagementRepository m_stockRepo;
 
 
     //void buildMenus();
@@ -50,11 +53,15 @@ private:
     QString groupingSettingKey() const;
     void setupGroupingMenu();
     void setGroupingMode(GroupingMode mode);
+    void cycleGroupingMode();
+    void updateCycleCategorizationButtonText();
     void chooseDatabasePath();
     void revealDatabaseFolder();
     void loadOrInitRepository(const QString& path = QString());
     void openSettingsDialog();
     void openListManager();
+    std::optional<int> currentSelectedPartId() const;
+    void refreshAfterStockChange(int partId);
 
     // Ansichts-Menüs
     void startWithRandomPartIfEnabled(); // Anzeige eines zufälligen Bauteils beim Programmstart
@@ -73,6 +80,9 @@ private slots:
     void onFileActivated(QListWidgetItem* item);
     void addNewPart();
     void openImportDataDialog();
+    void addStockForSelectedPart();
+    void removeStockForSelectedPart();
+    void openStockHistoryForSelectedPart();
 
     // Neue Option zum Löschen und Ändern
     void onPartsContextMenuRequested(const QPoint& pos);

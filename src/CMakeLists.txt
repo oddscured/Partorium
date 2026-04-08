@@ -42,6 +42,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         listmanagerdialog.h listmanagerdialog.cpp listmanagerdialog.ui
         importdatadialog.h importdatadialog.cpp importdatadialog.ui
         batchchangedialog.h batchchangedialog.cpp batchchangedialog.ui
+        addstockdialog.h addstockdialog.cpp addstockdialog.ui
+        removestockdialog.h removestockdialog.cpp removestockdialog.ui
+        stockentry.h
+        stockmanagementrepository.h stockmanagementrepository.cpp
+        stockhistorydialog.h stockhistorydialog.cpp stockhistorydialog.ui
     )
 
 if(APPLE)

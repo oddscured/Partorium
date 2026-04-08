@@ -21,12 +21,33 @@
 #include "listmanagerdialog.h"
 #include "importdatadialog.h"
 #include "batchchangedialog.h"
+#include "addstockdialog.h"
+#include "removestockdialog.h"
+#include "stockhistorydialog.h"
+#include "stockentry.h"
 #include <QRandomGenerator>
 #include <QImageReader>
 #include <QFutureWatcher>
 #include <QTreeWidgetItem>
 #include <QSignalBlocker>
+#include <QSet>
 #include <QtConcurrent/QtConcurrent>
+
+static QString groupingModeButtonText(MainWindow::GroupingMode mode) {
+    switch (mode) {
+    case MainWindow::GroupingMode::None:
+        return QObject::tr("Keine");
+    case MainWindow::GroupingMode::Category:
+        return QObject::tr("Kategorie");
+    case MainWindow::GroupingMode::Subcategory:
+        return QObject::tr("Unterkategorie");
+    case MainWindow::GroupingMode::Type:
+        return QObject::tr("Typ");
+    case MainWindow::GroupingMode::Format:
+        return QObject::tr("Format");
+    }
+    return QObject::tr("Kategorie");
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -64,8 +85,6 @@ MainWindow::MainWindow(QWidget *parent)
     loadOrInitRepository(pathFromSettings);
 
     // Repo + Models
-    m_repo = new JsonPartRepository(this);
-    m_repo->load();
     m_imagesModel = new QStandardItemModel(this);
 
     // Kontektmenü für das Parts-List Widget
@@ -105,6 +124,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btn_ExpandAll, &QPushButton::clicked, ui->lst_Parts, &QTreeWidget::expandAll);
     connect(ui->btn_Quit, &QPushButton::clicked, this, &MainWindow::close);
     connect(ui->btn_NewPart, &QPushButton::clicked, this, &MainWindow::addNewPart);
+    connect(ui->btn_AddStock, &QPushButton::clicked, this, &MainWindow::addStockForSelectedPart);
+    connect(ui->btn_RemoveStock, &QPushButton::clicked, this, &MainWindow::removeStockForSelectedPart);
+    connect(ui->btn_StockHistory, &QPushButton::clicked, this, &MainWindow::openStockHistoryForSelectedPart);
+    connect(ui->btn_CycleCategorization, &QPushButton::clicked, this, &MainWindow::cycleGroupingMode);
 
     // Kategorien aus Daten ableiten
     refillCategories();
@@ -136,6 +159,10 @@ void MainWindow::loadOrInitRepository(const QString& path) {
 
     // Persistieren
     QSettings("Partorium","Partorium").setValue("databasePath", m_repo->databasePath());
+
+    if (!m_stockRepo.setBaseDatabasePath(m_repo->databasePath())) {
+        qWarning() << "Could not initialize stock management path for database:" << m_repo->databasePath();
+    }
 }
 
 void MainWindow::chooseDatabasePath() {
@@ -160,6 +187,11 @@ void MainWindow::chooseDatabasePath() {
 
     // merken
     QSettings("Partorium","Partorium").setValue("databasePath", m_repo->databasePath());
+
+    if (!m_stockRepo.setBaseDatabasePath(m_repo->databasePath())) {
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Stock management file could not be initialized."));
+    }
 
     // UI auffrischen
     refillCategories();
@@ -210,6 +242,22 @@ void MainWindow::selectPartById(int id) {
             parent->setExpanded(true);
         }
         ui->lst_Parts->setCurrentItem(item);
+    }
+}
+
+std::optional<int> MainWindow::currentSelectedPartId() const {
+    auto* currentItem = ui->lst_Parts->currentItem();
+    if (!currentItem) return std::nullopt;
+    if (currentItem->childCount() > 0) return std::nullopt; // group item
+    return currentItem->data(0, Qt::UserRole).toInt();
+}
+
+void MainWindow::refreshAfterStockChange(int partId) {
+    refillCategories();
+    applyFilters();
+    selectPartById(partId);
+    if (auto updatedPart = m_repo->getPart(partId)) {
+        showPart(*updatedPart);
     }
 }
 
@@ -338,6 +386,19 @@ void MainWindow::setupGroupingMenu() {
         m_groupingActionGroup->addAction(action);
     }
 
+    connect(ui->act_GroupNone, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::None); });
+    connect(ui->act_GroupCategory, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Category); });
+    connect(ui->act_GroupSubcategory, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Subcategory); });
+    connect(ui->act_GroupType, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Type); });
+    connect(ui->act_GroupFormat, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Format); });
+
+    // Initiale Synchronisierung von Menüauswahl und Button-Beschriftung.
+    setGroupingMode(m_groupingMode);
+}
+
+void MainWindow::setGroupingMode(GroupingMode mode) {
+    m_groupingMode = mode;
+
     switch (m_groupingMode) {
     case GroupingMode::None:
         ui->act_GroupNone->setChecked(true);
@@ -356,15 +417,7 @@ void MainWindow::setupGroupingMenu() {
         break;
     }
 
-    connect(ui->act_GroupNone, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::None); });
-    connect(ui->act_GroupCategory, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Category); });
-    connect(ui->act_GroupSubcategory, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Subcategory); });
-    connect(ui->act_GroupType, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Type); });
-    connect(ui->act_GroupFormat, &QAction::triggered, this, [this]() { setGroupingMode(GroupingMode::Format); });
-}
-
-void MainWindow::setGroupingMode(GroupingMode mode) {
-    m_groupingMode = mode;
+    updateCycleCategorizationButtonText();
 
     QString settingValue = "category";
     switch (m_groupingMode) {
@@ -387,6 +440,31 @@ void MainWindow::setGroupingMode(GroupingMode mode) {
 
     QSettings("Partorium","Partorium").setValue(groupingSettingKey(), settingValue);
     applyFilters();
+}
+
+void MainWindow::cycleGroupingMode() {
+    switch (m_groupingMode) {
+    case GroupingMode::None:
+        setGroupingMode(GroupingMode::Category);
+        break;
+    case GroupingMode::Category:
+        setGroupingMode(GroupingMode::Subcategory);
+        break;
+    case GroupingMode::Subcategory:
+        setGroupingMode(GroupingMode::Type);
+        break;
+    case GroupingMode::Type:
+        setGroupingMode(GroupingMode::Format);
+        break;
+    case GroupingMode::Format:
+        setGroupingMode(GroupingMode::None);
+        break;
+    }
+}
+
+void MainWindow::updateCycleCategorizationButtonText() {
+    if (!ui->btn_CycleCategorization) return;
+    ui->btn_CycleCategorization->setText(groupingModeButtonText(m_groupingMode));
 }
 
 void MainWindow::showPart(const Part& p) {
@@ -665,6 +743,158 @@ void MainWindow::addNewPart() {
         // Nur wenn OK gedrückt wurde, einmal speichern und schließen:
         saveFromDialog();
     }
+}
+
+void MainWindow::addStockForSelectedPart() {
+    if (!m_repo) return;
+
+    const auto idOpt = currentSelectedPartId();
+    if (!idOpt) {
+        QMessageBox::information(this, tr("Hinweis"),
+                                 tr("Bitte zuerst ein Bauteil auswaehlen."));
+        return;
+    }
+
+    const int id = *idOpt;
+    const auto currentPartOpt = m_repo->getPart(id);
+    if (!currentPartOpt) {
+        QMessageBox::warning(this, tr("Fehler"),
+                             tr("Das ausgewaehlte Bauteil konnte nicht geladen werden."));
+        return;
+    }
+
+    AddStockDialog dlg(m_repo, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    const int qty = dlg.quantity();
+    if (qty <= 0) {
+        QMessageBox::warning(this, tr("Eingabe pruefen"),
+                             tr("Die Menge muss groesser als 0 sein."));
+        return;
+    }
+
+    Part updated = *currentPartOpt;
+    updated.quantity += qty;
+
+    if (!m_repo->updatePart(updated)) {
+        QMessageBox::warning(this, tr("Fehler"),
+                             tr("Der Bestand konnte nicht aktualisiert werden."));
+        return;
+    }
+
+    StockEntry entry;
+    entry.date = QDateTime::currentDateTimeUtc();
+    entry.type = "add";
+    entry.partId = updated.id;
+    entry.partName = updated.name;
+    entry.title = "";
+    entry.source = dlg.source();
+    entry.quantity = qty;
+    entry.deleted = false;
+    entry.comment = dlg.comment();
+
+    if (!m_stockRepo.appendEntry(entry)) {
+        QMessageBox::warning(this, tr("Warnung"),
+                             tr("Bestand wurde aktualisiert, aber die Buchung konnte nicht protokolliert werden."));
+    }
+
+    refreshAfterStockChange(id);
+}
+
+void MainWindow::removeStockForSelectedPart() {
+    if (!m_repo) return;
+
+    const auto idOpt = currentSelectedPartId();
+    if (!idOpt) {
+        QMessageBox::information(this, tr("Hinweis"),
+                                 tr("Bitte zuerst ein Bauteil auswaehlen."));
+        return;
+    }
+
+    const int id = *idOpt;
+    const auto currentPartOpt = m_repo->getPart(id);
+    if (!currentPartOpt) {
+        QMessageBox::warning(this, tr("Fehler"),
+                             tr("Das ausgewaehlte Bauteil konnte nicht geladen werden."));
+        return;
+    }
+
+    QStringList previousProjectTitles;
+    QVector<StockEntry> stockEntries;
+    if (m_stockRepo.loadEntries(stockEntries)) {
+        QSet<QString> seenTitles;
+        for (const auto& stockEntry : stockEntries) {
+            if (stockEntry.type != "remove") continue;
+            if (stockEntry.deleted) continue;
+
+            const QString title = stockEntry.title.trimmed();
+            if (title.isEmpty()) continue;
+
+            const QString key = title.toCaseFolded();
+            if (seenTitles.contains(key)) continue;
+            seenTitles.insert(key);
+            previousProjectTitles.push_back(title);
+        }
+        previousProjectTitles.sort(Qt::CaseInsensitive);
+    }
+
+    RemoveStockDialog dlg(previousProjectTitles, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    const int qty = dlg.quantity();
+    if (qty <= 0) {
+        QMessageBox::warning(this, tr("Eingabe pruefen"),
+                             tr("Die Menge muss groesser als 0 sein."));
+        return;
+    }
+
+    Part updated = *currentPartOpt;
+    if (updated.quantity - qty < 0) {
+        QMessageBox::warning(this, tr("Nicht genug Bestand"),
+                             tr("Entnahme nicht moeglich: Der Bestand wuerde negativ werden."));
+        return;
+    }
+    updated.quantity -= qty;
+
+    if (!m_repo->updatePart(updated)) {
+        QMessageBox::warning(this, tr("Fehler"),
+                             tr("Der Bestand konnte nicht aktualisiert werden."));
+        return;
+    }
+
+    StockEntry entry;
+    entry.date = QDateTime::currentDateTimeUtc();
+    entry.type = "remove";
+    entry.partId = updated.id;
+    entry.partName = updated.name;
+    entry.title = dlg.projectTitle();
+    entry.source = "";
+    entry.quantity = qty;
+    entry.deleted = false;
+    entry.comment = dlg.comment();
+
+    if (!m_stockRepo.appendEntry(entry)) {
+        QMessageBox::warning(this, tr("Warnung"),
+                             tr("Bestand wurde aktualisiert, aber die Buchung konnte nicht protokolliert werden."));
+    }
+
+    refreshAfterStockChange(id);
+}
+
+void MainWindow::openStockHistoryForSelectedPart() {
+    const auto idOpt = currentSelectedPartId();
+    if (!idOpt) {
+        QMessageBox::information(this, tr("Hinweis"),
+                                 tr("Bitte zuerst ein Bauteil auswaehlen."));
+        return;
+    }
+
+    StockHistoryDialog dlg(m_repo, &m_stockRepo, this);
+    dlg.setInitialSearchText(QString::number(*idOpt));
+    dlg.exec();
+
+    // Falls im Dialog Eintraege geloescht wurden, Ansicht auffrischen.
+    refreshAfterStockChange(*idOpt);
 }
 
 void MainWindow::onPartsContextMenuRequested(const QPoint& pos)
