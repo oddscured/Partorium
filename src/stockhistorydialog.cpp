@@ -62,8 +62,8 @@ bool StockHistoryDialog::loadEntries() {
 void StockHistoryDialog::rebuildModel() {
     m_model->clear();
     m_model->setHorizontalHeaderLabels({
-        tr("entryIndex"), tr("date"), tr("type"), tr("partId"), tr("partName"),
-        tr("title"), tr("source"), tr("quantity"), tr("deleted"), tr("comment")
+        tr("entryIndex"), tr("Datum"), tr("Aktion"), tr("ID"), tr("Bauteil"),
+        tr("Projekt"), tr("Quelle"), tr("Menge"), tr("Gelöscht"), tr("Kommentar")
     });
 
     for (int i = 0; i < m_entries.size(); ++i) {
@@ -72,8 +72,11 @@ void StockHistoryDialog::rebuildModel() {
 
         QList<QStandardItem*> row;
         row << new QStandardItem(QString::number(i));
-        row << new QStandardItem(e.date.toString(Qt::ISODate));
-        row << new QStandardItem(e.type);
+        row << new QStandardItem(e.date.toLocalTime().toString("yyyy.MM.dd HH:mm"));
+        const QString actionText = (e.type == "add") ? tr("Zugang")
+                                   : (e.type == "remove") ? tr("Abgang")
+                                                          : e.type;
+        row << new QStandardItem(actionText);
         row << new QStandardItem(QString::number(e.partId));
         row << new QStandardItem(e.partName);
         row << new QStandardItem(e.title);
