@@ -30,6 +30,8 @@
 [ ] show subfolders in "Files"
 
 [ ] allow Markdown or HTML in "Description" field
+
+[ ] add group function. Categories can be organized in groups, groups can be enabled/disabled in a special menue
 ##
 
 
